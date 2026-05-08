@@ -26,3 +26,4 @@ class Post(models.Model):
     created_by = models.ForeignKey(User, on_delete=models.CASCADE, related_name='posts')
     # ADICIONADO: on_delete=models.SET_NULL (para não perder o post se o user sumir)
     updated_by = models.ForeignKey(User, null=True, on_delete=models.SET_NULL, related_name='+') #esse related name diz para nao fazer a reserve relationship
+    #teste de git
