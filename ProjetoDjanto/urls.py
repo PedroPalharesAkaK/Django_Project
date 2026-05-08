@@ -18,9 +18,10 @@ from django.contrib import admin
 from django.urls import path # Mudou aqui!
 from boards import views # No seu caso, o app chama 'avaliacoes'
 
+#Quando alguém digita um endereço, o Django percorre a lista urlpatterns de cima para baixo até encontrar um par correspondente.
 urlpatterns = [
     path('', views.home, name='home'),
-    # Esta é a linha que você deve adicionar agora:
+    path('about/', views.about, name='about'), #nova linha para about
     path('boards/<int:pk>/', views.board_topics, name='board_topics'),
     path('admin/', admin.site.urls),
 ]
