@@ -1,4 +1,4 @@
-from django.shortcuts import render
+from django.shortcuts import render, get_object_or_404
 from .models import Board
 
 def home(request):
@@ -6,8 +6,8 @@ def home(request):
     return render(request, 'home.html', {'boards': boards})
 
 def board_topics(request, pk):
-    # Por enquanto, apenas para o site não quebrar:
-    return render(request, 'topics.html', {'pk': pk})
+    board = get_object_or_404(Board, pk=pk)
+    return render(request, 'topics.html', {'board': board})
 
 def about(request):
     return render(request, 'about.html')
