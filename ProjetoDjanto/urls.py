@@ -19,7 +19,8 @@ from django.urls import path # Mudou aqui!
 from boards import views # No seu caso, o app chama 'avaliacoes'
 
 urlpatterns = [
-    # path('caminho/', função_da_view, name='nome')
-    path('', views.home, name='home'), 
+    path('', views.home, name='home'),
+    # Esta é a linha que você deve adicionar agora:
+    path('boards/<int:pk>/', views.board_topics, name='board_topics'),
     path('admin/', admin.site.urls),
 ]
