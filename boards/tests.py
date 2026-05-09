@@ -4,16 +4,25 @@ from .views import home, board_topics
 from .models import Board
 
 class HomeTests(TestCase):
-    # Teste 1: Verifica se a página carrega com sucesso (Código 200)
-    def test_home_view_status_code(self):
+    def setUp(self):
+        # Cria um board de teste para garantir que a home tenha o que listar
+        self.board = Board.objects.create(name='Django', description='Django board.')
         url = reverse('home')
-        response = self.client.get(url)
-        self.assertEqual(response.status_code, 200)
+        self.response = self.client.get(url)
 
-    # Teste 2: Verifica se o link '/' chama a função 'home' correta
+    def test_home_view_status_code(self):
+        # Verifica se a página carrega (Status 200)
+        self.assertEqual(self.response.status_code, 200)
+
     def test_home_url_resolves_home_view(self):
+        # Verifica se a URL '/' chama a função 'home'
         view = resolve('/')
         self.assertEqual(view.func, home)
+
+    def test_home_view_contains_link_to_topics_page(self):
+        # Verifica se o link para os tópicos do board específico está no HTML
+        board_topics_url = reverse('board_topics', kwargs={'pk': self.board.pk})
+        self.assertContains(self.response, f'href="{board_topics_url}"')
 
 class BoardTopicsTests(TestCase):
     def setUp(self):
