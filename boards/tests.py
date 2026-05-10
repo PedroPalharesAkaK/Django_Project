@@ -49,3 +49,29 @@ class BoardTopicsTests(TestCase):
         homepage_url = reverse('home')
         # Usando f-string em vez de .format()
         self.assertContains(response, f'href="{homepage_url}"')
+
+class NewTopicTests(TestCase):
+    def setUp(self):
+        # Cria um Board de teste para ser usado em todos os métodos abaixo
+        Board.objects.create(name='Django', description='Django board.')
+
+    def test_new_topic_view_success_status_code(self):
+        url = reverse('new_topic', kwargs={'pk': 1})
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, 200)
+
+    def test_new_topic_view_not_found_status_code(self):
+        url = reverse('new_topic', kwargs={'pk': 99})
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, 404)
+
+    def test_new_topic_url_resolves_new_topic_view(self):
+        view = resolve('/boards/1/new/')
+        self.assertEqual(view.func, new_topic)
+
+    def test_new_topic_view_contains_link_back_to_board_topics_view(self):
+        new_topic_url = reverse('new_topic', kwargs={'pk': 1})
+        board_topics_url = reverse('board_topics', kwargs={'pk': 1})
+        response = self.client.get(new_topic_url)
+        # Usando f-string em vez de .format() para um código mais limpo
+        self.assertContains(response, f'href="{board_topics_url}"')
