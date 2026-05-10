@@ -1,7 +1,8 @@
 from django.urls import reverse, resolve
 from django.test import TestCase
 from .views import home, board_topics, new_topic
-from .models import Board
+from .models import Board, Topic, Post
+from django.contrib.auth.models import User
 
 class HomeTests(TestCase):
     def setUp(self):
@@ -86,5 +87,47 @@ class NewTopicTests(TestCase):
         response = self.client.get(new_topic_url)
         # Usando f-string em vez de .format() para um código mais limpo
         self.assertContains(response, f'href="{board_topics_url}"')
-    
+    def setUp(self):
+        # Cria um board e um usuário para os testes
+        Board.objects.create(name='Django', description='Django board.')
+        User.objects.create_user(username='john', email='john@doe.com', password='123')
+
+    def test_csrf(self):
+        url = reverse('new_topic', kwargs={'pk': 1})
+        response = self.client.get(url)
+        # Verifica se o token de segurança CSRF está presente no formulário
+        self.assertContains(response, 'csrfmiddlewaretoken')
+
+    def test_new_topic_valid_post_data(self):
+        url = reverse('new_topic', kwargs={'pk': 1})
+        data = {
+            'subject': 'Test title',
+            'message': 'Lorem ipsum dolor sit amet'
+        }
+        response = self.client.post(url, data)
+        # Verifica se o tópico e o post foram criados no banco
+        self.assertTrue(Topic.objects.exists())
+        self.assertTrue(Post.objects.exists())
+
+    def test_new_topic_invalid_post_data(self):
+        '''
+        Dados inválidos (vazio) não devem redirecionar.
+        O comportamento esperado é mostrar o formulário novamente com status 200.
+        '''
+        url = reverse('new_topic', kwargs={'pk': 1})
+        response = self.client.post(url, {})
+        self.assertEqual(response.status_code, 200)
+    def test_new_topic_invalid_post_data_empty_fields(self):
+        '''
+        Campos enviados mas vazios também devem ser rejeitados.
+        '''
+        url = reverse('new_topic', kwargs={'pk': 1})
+        data = {
+            'subject': '',
+            'message': ''
+        }
+        response = self.client.post(url, data)
+        self.assertEqual(response.status_code, 200)
+        self.assertFalse(Topic.objects.exists())
+        self.assertFalse(Post.objects.exists())
     

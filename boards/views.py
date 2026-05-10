@@ -14,33 +14,28 @@ def about(request):
     return render(request, 'about.html')
 
 def new_topic(request, pk):
-    # 1. Garante que o quadro existe ou retorna erro 404
     board = get_object_or_404(Board, pk=pk)
+    user = User.objects.first() 
     
-    # 2. Verifica se o utilizador enviou o formulário (clicou em Post)
     if request.method == 'POST':
         subject = request.POST.get('subject')
         message = request.POST.get('message')
 
-        # Por agora, usamos o primeiro utilizador do banco de dados (Hard code temporário)
-        user = User.objects.first() 
+        # ADICIONE ESTA VALIDAÇÃO:
+        if subject and message:  # Só cria se ambos tiverem conteúdo
+            topic = Topic.objects.create(
+                subject=subject,
+                board=board,
+                starter=user
+            )
+            post = Post.objects.create(
+                message=message,
+                topic=topic,
+                created_by=user
+            )
+            return redirect('board_topics', pk=board.pk)
+        
+        # Se os dados forem inválidos, o código continua para baixo
+        # e renderiza o form novamente (Status 200), satisfazendo o teste.
 
-        # 3. Cria o Tópico (a "pasta" da conversa)
-        topic = Topic.objects.create(
-            subject=subject,
-            board=board,
-            starter=user
-        )
-
-        # 4. Cria o Post (a mensagem real com o texto)
-        post = Post.objects.create(
-            message=message,
-            topic=topic,
-            created_by=user
-        )
-
-        # 5. Redireciona de volta para a lista de tópicos do quadro
-        return redirect('board_topics', pk=board.pk)
-
-    # 6. Se for um acesso normal (GET), apenas renderiza o template vazio
     return render(request, 'new_topic.html', {'board': board})
