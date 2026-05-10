@@ -1,6 +1,6 @@
 from django.urls import reverse, resolve
 from django.test import TestCase
-from .views import home, board_topics
+from .views import home, board_topics, new_topic
 from .models import Board
 
 class HomeTests(TestCase):
@@ -75,3 +75,5 @@ class NewTopicTests(TestCase):
         response = self.client.get(new_topic_url)
         # Usando f-string em vez de .format() para um código mais limpo
         self.assertContains(response, f'href="{board_topics_url}"')
+    
+    
