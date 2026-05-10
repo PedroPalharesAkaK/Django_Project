@@ -11,3 +11,8 @@ def board_topics(request, pk):
 
 def about(request):
     return render(request, 'about.html')
+
+def new_topic(request, pk):
+    # Usar get_object_or_404 é a melhor prática no Django 6
+    board = get_object_or_404(Board, pk=pk)
+    return render(request, 'new_topic.html', {'board': board})
