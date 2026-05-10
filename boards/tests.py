@@ -49,6 +49,17 @@ class BoardTopicsTests(TestCase):
         homepage_url = reverse('home')
         # Usando f-string em vez de .format()
         self.assertContains(response, f'href="{homepage_url}"')
+    def test_board_topics_view_contains_navigation_links(self):
+        board_topics_url = reverse('board_topics', kwargs={'pk': 1})
+        homepage_url = reverse('home')
+        new_topic_url = reverse('new_topic', kwargs={'pk': 1})
+
+        response = self.client.get(board_topics_url)
+
+     # Verifica o link de volta para a Home
+        self.assertContains(response, f'href="{homepage_url}"')
+    # Verifica o link para criar um novo tópico
+        self.assertContains(response, f'href="{new_topic_url}"')
 
 class NewTopicTests(TestCase):
     def setUp(self):

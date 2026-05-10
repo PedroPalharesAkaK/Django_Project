@@ -10,26 +10,38 @@
 {% endblock %}
 
 {% block content %}
-  <table class="table">
-    <thead class="thead-inverse">
-      <tr>
-        <th>Topic</th>
-        <th>Starter</th>
-        <th>Replies</th>
-        <th>Views</th>
-        <th>Last Update</th>
-      </tr>
-    </thead>
-    <tbody>
-      {% for topic in board.topics.all %}
+  <div class="mb-4">
+    <a href="{% url 'new_topic' board.pk %}" class="btn btn-primary">Novo Tópico</a>
+  </div>
+
+  <div class="table-responsive">
+    <table class="table table-striped border">
+      <thead class="table-dark">
         <tr>
-          <td>{{ topic.subject }}</td>
-          <td>{{ topic.starter.username }}</td>
-          <td>0</td>
-          <td>0</td>
-          <td>{{ topic.last_updated }}</td>
+          <th>Tópico</th>
+          <th>Autor</th>
+          <th>Respostas</th>
+          <th>Visualizações</th>
+          <th>Última Atualização</th>
         </tr>
-      {% endfor %}
-    </tbody>
-  </table>
+      </thead>
+      <tbody>
+        {% for topic in board.topics.all %}
+          <tr>
+            <td><a href="#">{{ topic.subject }}</a></td>
+            <td>{{ topic.starter.username }}</td>
+            <td>0</td>
+            <td>0</td>
+            <td>{{ topic.last_updated }}</td>
+          </tr>
+        {% empty %}
+          <tr>
+            <td colspan="5" class="text-center text-muted">
+              Ainda não há tópicos neste quadro. Seja o primeiro a postar!
+            </td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
 {% endblock %}
