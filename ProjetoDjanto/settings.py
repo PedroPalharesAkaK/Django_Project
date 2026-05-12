@@ -126,3 +126,4 @@ STATICFILES_DIRS = [
 #aprendendo a usar git no terminal vscode V 1.0.1
 
 LOGOUT_REDIRECT_URL = 'home'
+LOGIN_REDIRECT_URL = 'home'
