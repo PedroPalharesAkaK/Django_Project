@@ -1,7 +1,8 @@
 from django.urls import reverse, resolve
 from django.test import TestCase
 from django.contrib.auth.forms import UserCreationForm
-from .views import signup
+from ..views import signup #.. é tipo cd .. ; voltar uma pasta
+from ..forms import SignUpForm
 from django.contrib.auth.models import User
 
 
