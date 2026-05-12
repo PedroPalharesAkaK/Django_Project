@@ -124,3 +124,5 @@ STATICFILES_DIRS = [
     str(BASE_DIR / 'static'),  # O str() é OBRIGATÓRIO aqui para o Windows
 ]
 #aprendendo a usar git no terminal vscode V 1.0.1
+
+LOGOUT_REDIRECT_URL = 'home'
