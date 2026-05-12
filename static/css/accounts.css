@@ -2,12 +2,14 @@ body {
   background-image: url('../img/pink-flowers.webp');
 }
 
+@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@700&display=swap');
+
 .logo {
-  font-family: 'Peralta', cursive;
+    font-family: 'Montserrat', sans-serif;
 }
 
 .logo a {
-  color: rgba(0,0,0,.9);
+  color: rgba(0, 0, 0, 0.9);
 }
 
 .logo a:hover,
