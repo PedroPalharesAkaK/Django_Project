@@ -1,35 +1,29 @@
-{% extends 'base.html' %}
+{% extends 'base_accounts.html' %}
 
 {% load static %}
 
-{% block stylesheet %}
-  <link rel="stylesheet" href="{% static 'css/accounts.css' %}">
-{% endblock %}
+{% block title %}Log in{% endblock %}
 
 {% block content %}
-  <div class="row justify-content-center">
-    <div class="col-lg-4 col-md-6 col-sm-8">
-      <div class="card shadow">
-        <div class="card-body">
-          <h3 class="card-title text-center mb-4">Log in</h3>
-          <form method="post" novalidate>
-            {% csrf_token %}
-            {% include 'includes/form.html' %}
-            
-            <div class="d-grid gap-2 mt-3">
-              <button type="submit" class="btn btn-primary">Log in</button>
-            </div>
-          </form>
+  <div class="card shadow">
+    <div class="card-body">
+      <h3 class="card-title text-center mb-4">Log in</h3>
+      <form method="post" novalidate>
+        {% csrf_token %}
+        {% include 'includes/form.html' %}
+        
+        <div class="d-grid gap-2 mt-3">
+          <button type="submit" class="btn btn-primary">Log in</button>
         </div>
-        <div class="card-footer text-muted text-center">
-          New to Django Boards? <a href="{% url 'signup' %}">Sign up</a>
-        </div>
-      </div>
-      <div class="text-center py-2">
-        <small>
-          <a href="#" class="text-muted">Forgot your password?</a>
-        </small>
-      </div>
+      </form>
     </div>
+    <div class="card-footer text-muted text-center">
+      New to Django Boards? <a href="{% url 'signup' %}">Sign up</a>
+    </div>
+  </div>
+  <div class="text-center py-2">
+    <small>
+      <a href="#" class="text-muted">Forgot your password?</a>
+    </small>
   </div>
 {% endblock %}
