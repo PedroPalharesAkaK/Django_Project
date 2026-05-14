@@ -53,4 +53,14 @@ urlpatterns = [
     path('reset/complete/', 
          auth_views.PasswordResetCompleteView.as_view(template_name='password_reset_complete.html'), 
          name='password_reset_complete'),
+
+    # Rota para o formulário de alteração de senha
+    path('settings/password/', auth_views.PasswordChangeView.as_view(
+        template_name='password_change.html'
+    ), name='password_change'),
+
+    # Rota para a página de sucesso após a alteração
+    path('settings/password/done/', auth_views.PasswordChangeDoneView.as_view(
+        template_name='password_change_done.html'
+    ), name='password_change_done'),
 ]
