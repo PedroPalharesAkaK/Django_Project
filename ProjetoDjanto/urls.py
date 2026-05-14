@@ -29,4 +29,28 @@ urlpatterns = [
     path('boards/<int:pk>/', views.board_topics, name='board_topics'),
     path('boards/<int:pk>/new/', views.new_topic, name='new_topic'),
     path('about/', views.about, name='about'),
+    #reset de password
+    # 1. Página para solicitar o reset (onde digita o e-mail)
+    path('reset/', 
+         auth_views.PasswordResetView.as_view(
+             template_name='password_reset.html',
+             email_template_name='password_reset_email.html',
+             subject_template_name='password_reset_subject.txt'
+         ), 
+         name='password_reset'),
+
+    # 2. Página de sucesso após enviar o e-mail
+    path('reset/done/', 
+         auth_views.PasswordResetDoneView.as_view(template_name='password_reset_done.html'), 
+         name='password_reset_done'),
+
+    # 3. Página onde o usuário clica no link do e-mail para digitar a nova senha
+    path('reset/<uidb64>/<token>/', 
+         auth_views.PasswordResetConfirmView.as_view(template_name='password_reset_confirm.html'), 
+         name='password_reset_confirm'),
+
+    # 4. Página de conclusão final
+    path('reset/complete/', 
+         auth_views.PasswordResetCompleteView.as_view(template_name='password_reset_complete.html'), 
+         name='password_reset_complete'),
 ]
