@@ -8,8 +8,18 @@ from ..forms import NewTopicForm
 
 class NewTopicTests(TestCase):
     def setUp(self):
-        # Cria um Board de teste para ser usado em todos os métodos abaixo
-        Board.objects.create(name='Django', description='Django board.')
+        self.board = Board.objects.create(name='Django', description='Django board.')
+        self.username = 'john'
+        self.password = '1234abcd'
+        # 1. Cria o utilizador necessário para o teste
+        self.user = User.objects.create_user(username=self.username, email='john@doe.com', password=self.password)
+        self.url = reverse('new_topic', kwargs={'pk': self.board.pk})
+        
+        # 2. EFETUA O LOGIN (O passo que falta)
+        self.client.login(username=self.username, password=self.password)
+        
+        # Agora o self.response será 200 e terá o contexto do formulário
+        self.response = self.client.get(self.url)
 
     def test_new_topic_view_success_status_code(self):
         url = reverse('new_topic', kwargs={'pk': 1})
@@ -31,10 +41,7 @@ class NewTopicTests(TestCase):
         response = self.client.get(new_topic_url)
         # Usando f-string em vez de .format() para um código mais limpo
         self.assertContains(response, f'href="{board_topics_url}"')
-    def setUp(self):
-        # Cria um board e um usuário para os testes
-        Board.objects.create(name='Django', description='Django board.')
-        User.objects.create_user(username='john', email='john@doe.com', password='123')
+    
 
     def test_csrf(self):
         url = reverse('new_topic', kwargs={'pk': 1})
