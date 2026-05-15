@@ -10,6 +10,7 @@
       <h3 class="card-title text-center mb-4">Log in</h3>
       <form method="post" novalidate>
         {% csrf_token %}
+        <input type="hidden" name="next" value="{{ next }}">
         {% include 'includes/form.html' %}
         
         <div class="d-grid gap-2 mt-3">

@@ -2,6 +2,7 @@ from django.shortcuts import render, redirect, get_object_or_404
 from .models import Board, Topic, Post
 from .forms import NewTopicForm
 from django.contrib.auth.models import User
+from django.contrib.auth.decorators import login_required
 
 def home(request):
     boards = Board.objects.all()
@@ -14,6 +15,7 @@ def board_topics(request, pk):
 def about(request):
     return render(request, 'about.html')
 
+@login_required
 def new_topic(request, pk):
     board = get_object_or_404(Board, pk=pk)
     user = User.objects.first()  # Hardcode temporário até ao sistema de login
