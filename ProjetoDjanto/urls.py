@@ -30,6 +30,7 @@ urlpatterns = [
     path('boards/<int:pk>/new/', views.new_topic, name='new_topic'),
     path('about/', views.about, name='about'),
     path('boards/<int:pk>/topics/<int:topic_pk>/', views.topic_posts, name='topic_posts'),
+    path('boards/<int:pk>/topics/<int:topic_pk>/reply/', views.reply_topic, name='reply_topic'),
     #reset de password
     # 1. Página para solicitar o reset (onde digita o e-mail)
     path('reset/', 
