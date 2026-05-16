@@ -38,7 +38,7 @@ def new_topic(request, pk):
                     topic=topic,
                     created_by=request.user
                 )
-            return redirect('topic_posts', pk=pk, topic_pk=topic_pk)
+            return redirect('topic_posts', pk=pk, topic_pk=topic.pk)
     else:
         form = NewTopicForm()
     
