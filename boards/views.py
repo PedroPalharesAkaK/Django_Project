@@ -5,21 +5,32 @@ from django.contrib.auth.models import User
 from django.contrib.auth.decorators import login_required
 from django.db import transaction # Adicione este import
 from django.utils import timezone
-
+from django.db.models import Count
+from django.db.models import F
 def home(request):
     boards = Board.objects.all()
     return render(request, 'home.html', {'boards': boards})
 
 def board_topics(request, pk):
     board = get_object_or_404(Board, pk=pk)
-    return render(request, 'topics.html', {'board': board})
+    topics = board.topics.order_by('-last_updated').annotate(replies=Count('posts') - 1)
+    return render(request, 'topics.html', {'board': board, 'topics': topics})
 
 def about(request):
     return render(request, 'about.html')
 
 def topic_posts(request, pk, topic_pk):
-    # O Django passa os IDs capturados diretamente para cá
+    # 1. Faz a primeira e única consulta ao banco de dados
     topic = get_object_or_404(Topic, board__pk=pk, pk=topic_pk)
+    
+    # 2. Soma +1 diretamente na memória do Python (Super rápido!)
+    topic.views += 1
+    
+    # 3. Guarda o novo valor no banco de dados
+    topic.save()
+    
+    # Como o valor já está atualizado na memória do Python, 
+    # o template vai receber o número correto sem precisar de reconsultar o banco.
     return render(request, 'topic_posts.html', {'topic': topic})
 
 @login_required

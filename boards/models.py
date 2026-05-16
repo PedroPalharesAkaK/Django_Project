@@ -1,5 +1,6 @@
 from django.db import models
 from django.contrib.auth.models import User
+from django.db.models import F  # <-- ADICIONE ESSE IMPORT!
 
 class Board(models.Model):
     name = models.CharField(max_length=30, unique=True)
@@ -28,6 +29,7 @@ class Topic(models.Model):
     #, the board field is a ForeignKey to the Board model. It is telling Django that a Topic instance relates to only one Board instance
     #The related_name parameter will be used to create a reverse relationship where the Board instances will have access a list of Topic instances that belong to it.
     starter = models.ForeignKey(User, on_delete=models.CASCADE, related_name='topics')
+    views = models.PositiveIntegerField(default=0)
     def __str__(self):
         return self.subject
 
@@ -44,3 +46,5 @@ class Post(models.Model):
     def __str__(self):
         # Retorna apenas os primeiros 30 caracteres para não inundar o terminal
         return self.message[:30]
+    
+
