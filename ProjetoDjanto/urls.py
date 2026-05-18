@@ -65,4 +65,8 @@ urlpatterns = [
     path('settings/password/done/', auth_views.PasswordChangeDoneView.as_view(
         template_name='password_change_done.html'
     ), name='password_change_done'),
+    # Rota de edição usando a Class-Based View
+    path('boards/<int:pk>/topics/<int:topic_pk>/posts/<int:post_pk>/edit/', 
+         views.PostUpdateView.as_view(), 
+         name='edit_post'),
 ]
