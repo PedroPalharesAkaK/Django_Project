@@ -5,6 +5,7 @@ from django.contrib.auth.models import User
 from django.contrib.auth.decorators import login_required
 from django.db import transaction # Adicione este import
 from django.utils import timezone
+from django.utils.decorators import method_decorator
 from django.views.generic import UpdateView
 from django.db.models import Count
 from django.db.models import F
@@ -82,12 +83,23 @@ def reply_topic(request, pk, topic_pk):
     return render(request, 'reply_topic.html', {'topic': topic, 'form': form})
 
 #GCBV
+
+
+@method_decorator(login_required, name='dispatch')
 class PostUpdateView(UpdateView):
-    model = Post
+    model = Post                         # Mantenha isso para o Django 6 saber que o foco é a tabela Post
     fields = ('message', )
     template_name = 'edit_post.html'
     pk_url_kwarg = 'post_pk'
     context_object_name = 'post'
+
+    def get_queryset(self):
+        """
+        Filtragem do banco de dados: traz apenas os posts onde o criador 
+        seja o usuário logado na requisição (self.request.user).
+        """
+        queryset = super().get_queryset()
+        return queryset.filter(created_by=self.request.user)
 
     def form_valid(self, form):
         post = form.save(commit=False)
