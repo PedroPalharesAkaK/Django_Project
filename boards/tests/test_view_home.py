@@ -1,6 +1,7 @@
 from django.urls import reverse, resolve
 from django.test import TestCase
-from ..views import home, board_topics, new_topic
+# ATUALIZAÇÃO: Removido 'home' e adicionado 'BoardListView'
+from ..views import BoardListView, board_topics, new_topic
 from ..models import Board, Topic, Post
 from django.contrib.auth.models import User
 from ..forms import NewTopicForm
@@ -17,15 +18,14 @@ class HomeTests(TestCase):
         self.assertEqual(self.response.status_code, 200)
 
     def test_home_url_resolves_home_view(self):
-        # Verifica se a URL '/' chama a função 'home'
+        # ATUALIZAÇÃO DJANGO 6: Verifica se a URL '/' resolve para a classe correta usando .view_class
         view = resolve('/')
-        self.assertEqual(view.func, home)
+        self.assertEqual(view.func.view_class, BoardListView)
 
     def test_home_view_contains_link_to_topics_page(self):
         # Verifica se o link para os tópicos do board específico está no HTML
         board_topics_url = reverse('board_topics', kwargs={'pk': self.board.pk})
         self.assertContains(self.response, f'href="{board_topics_url}"')
-
 
 
 
