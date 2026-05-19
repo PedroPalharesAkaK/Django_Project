@@ -11,6 +11,13 @@ https://docs.djangoproject.com/en/6.0/ref/settings/
 """
 
 from pathlib import Path
+import sys
+
+# Se o comando executado no terminal contiver a palavra 'test', o Django usa um hasher super rápido
+if 'test' in sys.argv or 'test_coverage' in sys.argv:
+    PASSWORD_HASHERS = [
+        'django.contrib.auth.hashers.MD5PasswordHasher',
+    ]
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -80,9 +87,11 @@ DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
         'NAME': BASE_DIR / 'db.sqlite3',
+    },
+    'test': {
+        'NAME': ':memory:',  # <-- FORÇA O BANCO DE TESTES A RODAR NA MEMÓRIA RAM!
     }
 }
-
 
 # Password validation
 # https://docs.djangoproject.com/en/6.0/ref/settings/#auth-password-validators
