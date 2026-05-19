@@ -5,7 +5,7 @@ from django.urls import resolve, reverse
 from ..models import Board, Post, Topic
 # CORREÇÃO 1: Garanta que estás a importar a view correta (seja ela TopicPostsListView ou equivalente)
 # Substitua pelo nome real da tua view de listagem de posts, caso seja diferente:
-from ..views import TopicListView 
+from ..views import PostListView, TopicListView 
 
 class TopicPostsTests(TestCase):
     def setUp(self):
@@ -25,9 +25,8 @@ class TopicPostsTests(TestCase):
 
     def test_view_class(self):
         view = resolve(f'/boards/{self.board.pk}/topics/{self.topic.pk}/')
-        # Se ainda for uma função, usamos views.topic_posts diretamente:
-        from .. import views
-        self.assertEqual(view.func, views.topic_posts)
+        # Agora que é uma classe, validamos usando .view_class!
+        self.assertEqual(view.func.view_class, PostListView)
 
     def test_contains_navigation_links(self):
         # CORREÇÃO 4: Gerar os links de navegação usando as PKs dinâmicas do setUp

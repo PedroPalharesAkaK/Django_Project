@@ -11,6 +11,7 @@ from django.db.models import Count
 # Adicione a ListView nos seus imports do topo
 from django.views.generic import ListView
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger 
+from django.db.models import F
 
 
 class BoardListView(ListView):
@@ -39,19 +40,39 @@ class TopicListView(ListView):
 def about(request):
     return render(request, 'about.html')
 
-def topic_posts(request, pk, topic_pk):
-    # 1. Faz a primeira e única consulta ao banco de dados
-    topic = get_object_or_404(Topic, board__pk=pk, pk=topic_pk)
-    
-    # 2. Soma +1 diretamente na memória do Python (Super rápido!)
-    topic.views += 1
-    
-    # 3. Guarda o novo valor no banco de dados
-    topic.save()
-    
-    # Como o valor já está atualizado na memória do Python, 
-    # o template vai receber o número correto sem precisar de reconsultar o banco.
-    return render(request, 'topic_posts.html', {'topic': topic})
+# Pode apagar ou comentar a antiga 'def topic_posts' e colar esta no lugar:
+from django.shortcuts import get_object_or_404
+from django.views.generic import ListView
+from django.db.models import F  # Import necessário para incrementar de forma segura
+from .models import Topic, Post
+
+class PostListView(ListView):
+    model = Post
+    context_object_name = 'posts'
+    template_name = 'topic_posts.html'
+    paginate_by = 2  # Mantido 2 conforme o tutorial para você testar a paginação facilmente
+
+    def get_queryset(self):
+        # CORREÇÃO do corte da imagem: Captura o Topic usando a PK do Board ('pk') e a PK do Tópico ('topic_pk')
+        self.topic = get_object_or_404(
+            Topic, 
+            board__pk=self.kwargs.get('pk'), 
+            pk=self.kwargs.get('topic_pk')
+        )
+        # Retorna os posts ordenados por criação
+        queryset = self.topic.posts.order_by('created_at')
+        return queryset
+
+    def get_context_data(self, **kwargs):
+        # CORREÇÃO DJANGO 6 (Segurança): Atualiza as views diretamente no Banco de Dados usando F()
+        # Evita bugs se múltiplos usuários acessarem ao mesmo tempo.
+        Topic.objects.filter(pk=self.topic.pk).update(views=F('views') + 1)
+        
+        # Atualiza a instância na memória para o template exibir o número correto imediatamente
+        self.topic.refresh_from_db()
+        
+        kwargs['topic'] = self.topic
+        return super().get_context_data(**kwargs)
 
 @login_required
 def new_topic(request, pk):
