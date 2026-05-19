@@ -1,7 +1,7 @@
 from django.urls import reverse, resolve
 from django.test import TestCase
 # ATUALIZAÇÃO: Removido 'home' e adicionado 'BoardListView'
-from ..views import BoardListView, board_topics, new_topic
+from ..views import BoardListView, new_topic
 from ..models import Board, Topic, Post
 from django.contrib.auth.models import User
 from ..forms import NewTopicForm
