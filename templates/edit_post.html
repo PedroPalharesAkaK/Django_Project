@@ -2,6 +2,10 @@
 
 {% block title %}Edit post{% endblock %}
 
+{% block stylesheet %}
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/simplemde/1.11.2/simplemde.min.css">
+{% endblock %}
+
 {% block breadcrumb %}
   <li class="breadcrumb-item"><a href="{% url 'home' %}">Boards</a></li>
   <li class="breadcrumb-item"><a href="{% url 'board_topics' post.topic.board.pk %}">{{ post.topic.board.name }}</a></li>
@@ -21,4 +25,12 @@
       Cancel
     </a>
   </form>
+{% endblock %}
+
+{% block javascript %}
+  <script src="https://cdn.jsdelivr.net/simplemde/1.11.2/simplemde.min.js"></script>
+  <script>
+    // Transforma a caixa de texto simples do formulário num editor Markdown rico
+    var simplemde = new SimpleMDE({ forceSync: true });
+  </script>
 {% endblock %}

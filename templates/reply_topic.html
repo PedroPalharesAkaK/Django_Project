@@ -4,6 +4,10 @@
 
 {% block title %}Post a reply{% endblock %}
 
+{% block stylesheet %}
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/simplemde/1.11.2/simplemde.min.css">
+{% endblock %}
+
 {% block breadcrumb %}
   <li class="breadcrumb-item"><a href="{% url 'home' %}">Boards</a></li>
   <li class="breadcrumb-item"><a href="{% url 'board_topics' topic.board.pk %}">{{ topic.board.name }}</a></li>
@@ -26,7 +30,7 @@
           <div class="col-6">
             <strong class="text-muted">{{ post.created_by.username }}</strong>
           </div>
-          <div class="col-6 text-right">
+          <div class="col-6 text-end">
             <small class="text-muted">{{ post.created_at }}</small>
           </div>
         </div>
@@ -35,4 +39,13 @@
     </div>
   {% endfor %}
 
+{% endblock %}
+
+{% block javascript %}
+  <script src="https://cdn.jsdelivr.net/simplemde/1.11.2/simplemde.min.js"></script>
+  <script>
+    // 3. ATIVA O EDITOR NA CAIXA DE TEXTO DA MENSAGEM
+    // O forceSync garante que o texto escrito seja passado para o Django na hora de salvar
+    var simplemde = new SimpleMDE({ forceSync: true });
+  </script>
 {% endblock %}
