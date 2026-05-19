@@ -50,29 +50,27 @@ class PostListView(ListView):
     model = Post
     context_object_name = 'posts'
     template_name = 'topic_posts.html'
-    paginate_by = 2  # Mantido 2 conforme o tutorial para você testar a paginação facilmente
-
-    def get_queryset(self):
-        # CORREÇÃO do corte da imagem: Captura o Topic usando a PK do Board ('pk') e a PK do Tópico ('topic_pk')
-        self.topic = get_object_or_404(
-            Topic, 
-            board__pk=self.kwargs.get('pk'), 
-            pk=self.kwargs.get('topic_pk')
-        )
-        # Retorna os posts ordenados por criação
-        queryset = self.topic.posts.order_by('created_at')
-        return queryset
+    paginate_by = 20
 
     def get_context_data(self, **kwargs):
-        # CORREÇÃO DJANGO 6 (Segurança): Atualiza as views diretamente no Banco de Dados usando F()
-        # Evita bugs se múltiplos usuários acessarem ao mesmo tempo.
-        Topic.objects.filter(pk=self.topic.pk).update(views=F('views') + 1)
-        
-        # Atualiza a instância na memória para o template exibir o número correto imediatamente
-        self.topic.refresh_from_db()
-        
+        # Cria uma chave única na sessão do utilizador para este tópico específico
+        session_key = f'viewed_topic_{self.topic.pk}'
+
+        # Se esta chave não existir (False), significa que é a primeira visita
+        if not self.request.session.get(session_key, False):
+            self.topic.views += 1
+            self.topic.save()
+            # Marca a chave como True para que futuras visitas não somem +1
+            self.request.session[session_key] = True
+
         kwargs['topic'] = self.topic
         return super().get_context_data(**kwargs)
+
+    def get_queryset(self):
+        # Vai buscar o tópico à base de dados para podermos listar os posts
+        self.topic = get_object_or_404(Topic, board__pk=self.kwargs.get('pk'), pk=self.kwargs.get('topic_pk'))
+        queryset = self.topic.posts.order_by('created_at')
+        return queryset
 
 @login_required
 def new_topic(request, pk):
