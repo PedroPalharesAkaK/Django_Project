@@ -1,0 +1,37 @@
+#antes de rodar o teste se quiser verificar a memoria, use este codigo no manage.py
+------------------------------------------------------------------------------------
+------------------------------------------------------------------------------------
+#!/usr/bin/env python
+"""Django's command-line utility for administrative tasks."""
+import os
+import sys
+import tracemalloc  # Importa a biblioteca de monitoramento de memória
+
+def main():
+    """Run administrative tasks."""
+    # 1. Inicia o monitoramento de memória RAM no começo de tudo
+    tracemalloc.start()
+
+    os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'ProjetoDjanto.settings')
+    try:
+        from django.core.management import execute_from_command_line
+    except ImportError as exc:
+        raise ImportError(
+            "Couldn't import Django. Are you sure it's installed and "
+            "available on your PYTHONPATH environment variable? Did you "
+            "forget to activate a virtual environment?"
+        ) from exc
+    execute_from_command_line(sys.argv)
+
+    # 2. Captura o consumo atual e o pico máximo atingido durante a execução
+    current, peak = tracemalloc.get_traced_memory()
+    tracemalloc.stop()
+
+    # 3. Exibe o resultado formatado em Megabytes no terminal
+    print(f"\n========================================")
+    print(f"[MEMÓRIA GLOBAL DA SUÍTE]: {peak / (1024 * 1024):.2f} MB")
+    print(f"========================================\n")
+
+
+if __name__ == '__main__':
+    main()
