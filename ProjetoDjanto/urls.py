@@ -26,7 +26,7 @@ urlpatterns = [
     path('signup/', accounts_views.signup, name='signup'),
     path('login/', auth_views.LoginView.as_view(template_name='login.html'), name='login'), #temporario
     path('logout/', auth_views.LogoutView.as_view(), name='logout'),
-    path('boards/<int:pk>/', views.board_topics, name='board_topics'),
+    path('boards/<int:pk>/', views.TopicListView.as_view(), name='board_topics'),
     path('boards/<int:pk>/new/', views.new_topic, name='new_topic'),
     path('about/', views.about, name='about'),
     path('boards/<int:pk>/topics/<int:topic_pk>/', views.topic_posts, name='topic_posts'),

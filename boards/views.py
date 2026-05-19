@@ -10,6 +10,8 @@ from django.views.generic import UpdateView
 from django.db.models import Count
 # Adicione a ListView nos seus imports do topo
 from django.views.generic import ListView
+from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger 
+
 
 class BoardListView(ListView):
     model = Board
@@ -17,10 +19,22 @@ class BoardListView(ListView):
     template_name = 'home.html'
 
 
-def board_topics(request, pk):
-    board = get_object_or_404(Board, pk=pk)
-    topics = board.topics.order_by('-last_updated').annotate(replies=Count('posts') - 1)
-    return render(request, 'topics.html', {'board': board, 'topics': topics})
+class TopicListView(ListView):
+    model = Board  # O Django 6 precisa saber o modelo base para construir a view
+    context_object_name = 'topics'
+    template_name = 'topics.html'
+    paginate_by = 20
+
+    def get_queryset(self):
+        # Busca o board ou joga o erro 404
+        self.board = get_object_or_404(Board, pk=self.kwargs.get('pk'))
+        # Traz os tópicos pertencentes a este board específico
+        queryset = self.board.topics.order_by('-last_updated').annotate(replies=Count('posts') - 1)
+        return queryset
+
+    def get_context_data(self, **kwargs):
+        kwargs['board'] = self.board  # CORREÇÃO: Usa o self.board capturado no get_queryset
+        return super().get_context_data(**kwargs)
 
 def about(request):
     return render(request, 'about.html')
