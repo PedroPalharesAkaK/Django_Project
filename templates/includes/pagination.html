@@ -2,25 +2,32 @@
   <nav aria-label="Topics pagination" class="mb-4">
     <ul class="pagination justify-content-center">
       
-      {% if page_obj.has_previous %}
+      {% if page_obj.number > 1 %}
         <li class="page-item">
-          <a class="page-link" href="?page={{ page_obj.previous_page_number }}">Previous</a>
+          <a class="page-link" href="?page=1">Primeira</a>
         </li>
       {% else %}
         <li class="page-item disabled">
-          <span class="page-link">Previous</span>
+          <span class="page-link">Primeira</span>
+        </li>
+      {% endif %}
+
+      {% if page_obj.has_previous %}
+        <li class="page-item">
+          <a class="page-link" href="?page={{ page_obj.previous_page_number }}">Anterior</a>
+        </li>
+      {% else %}
+        <li class="page-item disabled">
+          <span class="page-link">Anterior</span>
         </li>
       {% endif %}
 
       {% for page_num in paginator.page_range %}
         {% if page_obj.number == page_num %}
           <li class="page-item active" aria-current="page">
-            <span class="page-link">
-              {{ page_num }}
-              <span class="visually-hidden">(current)</span>
-            </span>
+            <span class="page-link">{{ page_num }}</span>
           </li>
-        {% else %}
+        {% elif page_num > page_obj.number|add:'-3' and page_num < page_obj.number|add:'3' %}
           <li class="page-item">
             <a class="page-link" href="?page={{ page_num }}">{{ page_num }}</a>
           </li>
@@ -29,11 +36,21 @@
 
       {% if page_obj.has_next %}
         <li class="page-item">
-          <a class="page-link" href="?page={{ page_obj.next_page_number }}">Next</a>
+          <a class="page-link" href="?page={{ page_obj.next_page_number }}">Próximo</a>
         </li>
       {% else %}
         <li class="page-item disabled">
-          <span class="page-link">Next</span>
+          <span class="page-link">Próximo</span>
+        </li>
+      {% endif %}
+
+      {% if page_obj.number != paginator.num_pages %}
+        <li class="page-item">
+          <a class="page-link" href="?page={{ paginator.num_pages }}">Última</a>
+        </li>
+      {% else %}
+        <li class="page-item disabled">
+          <span class="page-link">Última</span>
         </li>
       {% endif %}
 
