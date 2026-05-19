@@ -1,4 +1,5 @@
 from django.shortcuts import render, redirect, get_object_or_404
+from django.urls import reverse
 from .models import Board, Topic, Post
 from .forms import NewTopicForm, PostForm
 from django.contrib.auth.models import User
@@ -98,9 +99,7 @@ def new_topic(request, pk):
 
 @login_required
 def reply_topic(request, pk, topic_pk):
-    # Busca o tópico garantindo que ele pertença ao board correto
     topic = get_object_or_404(Topic, board__pk=pk, pk=topic_pk)
-    
     if request.method == 'POST':
         form = PostForm(request.POST)
         if form.is_valid():
@@ -108,17 +107,22 @@ def reply_topic(request, pk, topic_pk):
             post.topic = topic
             post.created_by = request.user
             post.save()
-            
-            # Atualiza a data do tópico para que ele suba na listagem
+
             topic.last_updated = timezone.now()
             topic.save()
+
+            # --- A NOVA MÁGICA ENTRA AQUI ---
+            # 1. Gera a string da URL base
+            topic_url = reverse('topic_posts', kwargs={'pk': pk, 'topic_pk': topic_pk})
             
-            return redirect('topic_posts', pk=pk, topic_pk=topic_pk)
+            # 2. Monta a URL completa com a página final e a âncora do post (usando f-string)
+            topic_post_url = f"{topic_url}?page={topic.get_page_count()}#{post.pk}"
+            
+            # 3. Redireciona o utilizador
+            return redirect(topic_post_url)
     else:
         form = PostForm()
-        
     return render(request, 'reply_topic.html', {'topic': topic, 'form': form})
-
 #GCBV
 
 

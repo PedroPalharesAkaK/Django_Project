@@ -67,11 +67,20 @@ class SuccessfulReplyTopicTests(ReplyTopicTestCase):
         self.response = self.client.post(self.url, {'message': 'hello world!'})
 
     def test_redirection(self):
-        """
-        Após uma resposta bem-sucedida, deve redirecionar para a listagem de posts do tópico.
-        """
-        topic_posts_url = reverse('topic_posts', kwargs={'pk': self.board.pk, 'topic_pk': self.topic.pk})
-        self.assertRedirects(self.response, topic_posts_url)
+        '''
+        A valid form submission should redirect the user 
+        to the topic_posts view, to the last page, 
+        and anchor to the newly created post.
+        '''
+        # 1. Gera a URL base usando o reverse
+        url = reverse('topic_posts', kwargs={'pk': self.board.pk, 'topic_pk': self.topic.pk})
+        
+        # 2. Constrói a URL esperada exatamente como na view
+        # Nota: assumindo que o novo post é o segundo (ID 2), como sugere o exemplo da imagem
+        expected_url = f"{url}?page=1#2" 
+        
+        # 3. Verifica se o redirecionamento aponta para esta URL específica
+        self.assertRedirects(self.response, expected_url)
 
     def test_reply_created(self):
         """
