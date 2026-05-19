@@ -1,6 +1,8 @@
 from django.db import models
 from django.contrib.auth.models import User
 from django.db.models import F  # <-- ADICIONE ESSE IMPORT!
+from django.utils.html import mark_safe  # <-- ADICIONE ESTA LINHA NO TOPO
+from markdown import markdown
 
 class Board(models.Model):
     name = models.CharField(max_length=30, unique=True)
@@ -35,16 +37,15 @@ class Topic(models.Model):
 
 class Post(models.Model):
     message = models.TextField(max_length=4000)
-    # ADICIONADO: on_delete=models.CASCADE
-    topic = models.ForeignKey(Topic, on_delete=models.CASCADE, related_name='posts')
+    topic = models.ForeignKey(Topic, related_name='posts', on_delete=models.CASCADE)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(null=True)
-    created_by = models.ForeignKey(User, on_delete=models.CASCADE, related_name='posts')
-    # ADICIONADO: on_delete=models.SET_NULL (para não perder o post se o user sumir)
-    updated_by = models.ForeignKey(User, null=True, on_delete=models.SET_NULL, related_name='+') #esse related name diz para nao fazer a reserve relationship
-    #teste de git
-    def __str__(self):
-        # Retorna apenas os primeiros 30 caracteres para não inundar o terminal
-        return self.message[:30]
+    created_by = models.ForeignKey(User, related_name='posts', on_delete=models.CASCADE)
+    updated_by = models.ForeignKey(User, null=True, related_name='+', on_delete=models.CASCADE)
+
+    # <-- ADICIONE ESTE BLOCO NO FINAL DA CLASSE POST -->
+    def get_message_as_markdown(self):
+        # Versão moderna e corrigida: sem o safe_mode
+        return mark_safe(markdown(self.message))
     
 

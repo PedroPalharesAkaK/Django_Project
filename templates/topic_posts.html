@@ -38,7 +38,7 @@
                 <small class="text-muted">{{ post.created_at|date:"d/m/Y H:i" }}</small>
               </div>
             </div>
-            {{ post.message }}
+            {{ post.get_message_as_markdown }}
             
             {% if post.created_by == user %}
               <div class="mt-3">
