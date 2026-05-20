@@ -1,1 +1,0 @@
-Manter atualizado o versionamento
