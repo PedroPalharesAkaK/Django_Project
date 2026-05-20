@@ -13,6 +13,7 @@ https://docs.djangoproject.com/en/6.0/ref/settings/
 from pathlib import Path
 import sys
 from decouple import config, Csv
+import dj_database_url
 
 # Se o comando executado no terminal contiver a palavra 'test', o Django usa um hasher super rápido
 if 'test' in sys.argv or 'test_coverage' in sys.argv:
@@ -85,12 +86,11 @@ WSGI_APPLICATION = 'ProjetoDjanto.wsgi.application'
 # https://docs.djangoproject.com/en/6.0/ref/settings/#databases
 
 DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
-    },
+    'default': dj_database_url.config(
+        default=config('DATABASE_URL')
+    ),
     'test': {
-        'NAME': ':memory:',  # <-- FORÇA O BANCO DE TESTES A RODAR NA MEMÓRIA RAM!
+        'NAME': ':memory:',  # <-- Mantendo a sua otimização de RAM intacta!
     }
 }
 
