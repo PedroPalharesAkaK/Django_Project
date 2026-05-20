@@ -1,0 +1,6 @@
+# Pastas e arquivos de ambiente e banco
+.venv/
+__pycache__/
+*.pyc
+db.sqlite3
+.env
