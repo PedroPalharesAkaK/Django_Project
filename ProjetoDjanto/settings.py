@@ -120,18 +120,18 @@ LANGUAGE_CODE = 'pt-br'
 
 TIME_ZONE = 'America/Sao_Paulo'
 
-USE_I18N = True
+USE_I18N = True #ativar internationalization
 
-USE_TZ = True
+USE_TZ = True #muda todos horarios para utc
 
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/6.0/howto/static-files/
 
-STATIC_URL = 'static/'
+STATIC_URL = 'static/' 
 
 STATICFILES_DIRS = [
-    str(BASE_DIR / 'static'),  # O str() é OBRIGATÓRIO aqui para o Windows
+    str(BASE_DIR / 'static'),  # O str() é OBRIGATÓRIO aqui para o Windows, esta barra concatena os caminhos enre base dir e static
 ]
 #aprendendo a usar git no terminal vscode V 1.0.1
 
