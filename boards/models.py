@@ -13,7 +13,7 @@ class Board(models.Model):
 
     # 1. Contagem de Posts (Exatamente como na imagem)
     def get_posts_count(self):
-        return Post.objects.filter(topic__board=self).count()
+        return Post.objects.filter(topic__board=self).count() #tabela post, veja class post
 
     # 2. O QUE FALTOU NA IMAGEM: Contagem de Tópicos do Board
     def get_topics_count(self):
