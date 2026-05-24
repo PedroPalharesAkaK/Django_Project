@@ -31,7 +31,7 @@ class Topic(models.Model):
     #, the board field is a ForeignKey to the Board model. It is telling Django that a Topic instance relates to only one Board instance
     #The related_name parameter will be used to create a reverse relationship where the Board instances will have access a list of Topic instances that belong to it.
     starter = models.ForeignKey(User, on_delete=models.CASCADE, related_name='topics')
-    views = models.PositiveIntegerField(default=0)
+    views = models.PositiveIntegerField(default=0) #topico nasce com 0 views
     def __str__(self):
         return self.subject
 
