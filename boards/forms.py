@@ -1,21 +1,22 @@
 from django import forms
-from .models import Topic, Post
+from .models import Avaliacao, Comentario
 
-class NewTopicForm(forms.ModelForm):
-    message = forms.CharField(
-        widget=forms.Textarea(attrs={'rows': 5, 'placeholder': 'Qual sua opinião?'}), 
+class NewAvaliacaoForm(forms.ModelForm):
+    # Usamos 'texto' em vez de 'message' para ligar com o modelo Comentario
+    texto = forms.CharField(
+        widget=forms.Textarea(attrs={'rows': 5, 'placeholder': 'Qual a sua opinião sobre o professor?'}), 
         max_length=4000,
-        help_text='The max length of the text is 4000.'
-        )
+        help_text='O tamanho máximo do texto é 4000 caracteres.'
+    )
 
     class Meta:
-        model = Topic
-        fields = ['subject', 'message']
+        model = Avaliacao
+        fields = ['titulo', 'texto'] # 'subject' virou 'titulo'
 
-class PostForm(forms.ModelForm):
+class ComentarioForm(forms.ModelForm):
     class Meta:
-        model = Post
-        fields = ['message',]
+        model = Comentario
+        fields = ['texto',] # 'message' virou 'texto'
         widgets = {
-            'message': forms.Textarea(attrs={'rows': 5, 'placeholder': 'Escreva sua resposta aqui...'})
+            'texto': forms.Textarea(attrs={'rows': 5, 'placeholder': 'Escreva seu comentário aqui...'})
         }
