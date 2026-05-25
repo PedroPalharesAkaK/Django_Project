@@ -45,10 +45,15 @@ class NewAvaliacaoTests(TestCase):
         self.assertContains(self.response, 'csrfmiddlewaretoken')
 
     def test_new_avaliacao_valid_post_data(self):
-        # 3. DICIONÁRIO ATUALIZADO: Usamos 'titulo' e 'texto' em vez de 'subject' e 'message'
+        # DICIONÁRIO ATUALIZADO: Agora enviamos o pacote completo com as notas!
         data = {
             'titulo': 'Excelente didática',
-            'texto': 'As aulas são muito bem estruturadas.'
+            'texto': 'As aulas são muito bem estruturadas.',
+            'nota_geral': 5,
+            'nota_didatica': 5,
+            'nota_empenho': 4,
+            'nota_relacao': 5,
+            'nota_dificuldade': 3
         }
         response = self.client.post(self.url, data)
         

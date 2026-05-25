@@ -12,6 +12,7 @@ from django.db.models import Count
 from django.views.generic import ListView
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger 
 from django.db.models import F
+from django.views.decorators.cache import never_cache
 
 
 
@@ -80,6 +81,7 @@ class ComentarioListView(ListView):
         return queryset
 
 @login_required
+@never_cache
 def new_avaliacao(request, pk):
     professor = get_object_or_404(Professor, pk=pk)
     
