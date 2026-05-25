@@ -5,6 +5,17 @@
 {% endblock %}
 
 {% block content %}
+  <div class="row mb-4">
+    <div class="col-md-4">
+      <form method="GET" action="{% url 'home' %}">
+        <div class="input-group">
+          <input type="text" name="q" class="form-control" placeholder="Pesquisar professor..." value="{{ request.GET.q }}">
+          <button type="submit" class="btn btn-outline-primary">Buscar</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
   <table class="table table-striped border">
     <thead class="table-dark">
       <tr>
@@ -41,6 +52,12 @@
                 </small>
               {% endif %}
             {% endwith %}
+          </td>
+        </tr>
+      {% empty %}
+        <tr>
+          <td colspan="4" class="text-center text-muted py-4">
+            Nenhum professor encontrado com esse nome.
           </td>
         </tr>
       {% endfor %}

@@ -18,9 +18,17 @@ from django.views.decorators.cache import never_cache
 
 class ProfessorListView(ListView):
     model = Professor
-    context_object_name = 'professors'
+    context_object_name = 'professors' 
     template_name = 'home.html'
+    paginate_by = 10
 
+    def get_queryset(self):
+        queryset = super().get_queryset()
+        query = self.request.GET.get('q') # Captura o que o utilizador digitou
+        if query:
+            # Filtra pelo nome, ignorando maiúsculas/minúsculas (icontains)
+            queryset = queryset.filter(nome__icontains=query)
+        return queryset
 
 class AvaliacaoListView(ListView):
     model = Professor
