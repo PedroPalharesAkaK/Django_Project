@@ -22,24 +22,30 @@ class ProfessorListView(ListView):
 
 
 class AvaliacaoListView(ListView):
-    model = Professor  # O Django 6 precisa saber o modelo base para construir a view
+    model = Professor
     context_object_name = 'avaliacoes'
     template_name = 'avaliacoes.html'
     paginate_by = 20
 
     def get_queryset(self):
-        # Busca o professor ou joga o erro 404
         self.professor = get_object_or_404(Professor, pk=self.kwargs.get('pk'))
-        # Traz os tópicos pertencentes a este professor específico
         queryset = self.professor.avaliacoes.order_by('-last_updated').annotate(replies=Count('comentarios') - 1)
         return queryset
 
     def get_context_data(self, **kwargs):
-        kwargs['professor'] = self.professor  # CORREÇÃO: Usa o self.professor capturado no get_queryset
+        kwargs['professor'] = self.professor
+        
+        # --- A NOSSA NOVA MÁGICA DE INVESTIGAÇÃO ---
+        # Se o utilizador estiver logado, verifica se já existe uma avaliação dele para este professor
+        if self.request.user.is_authenticated:
+            kwargs['usuario_ja_avaliou'] = Avaliacao.objects.filter(
+                professor=self.professor, 
+                starter=self.request.user
+            ).exists()
+        else:
+            kwargs['usuario_ja_avaliou'] = False
+            
         return super().get_context_data(**kwargs)
-
-def about(request):
-    return render(request, 'about.html')
 
 # Pode apagar ou comentar a antiga 'def avaliacao_comentarios' e colar esta no lugar:
 from django.shortcuts import get_object_or_404
@@ -76,6 +82,16 @@ class ComentarioListView(ListView):
 @login_required
 def new_avaliacao(request, pk):
     professor = get_object_or_404(Professor, pk=pk)
+    
+    # --- O SEGURANÇA DA PORTA (BACKEND) ---
+    # Verifica na base de dados se este aluno já avaliou este professor
+    ja_avaliou = Avaliacao.objects.filter(professor=professor, starter=request.user).exists()
+    
+    if ja_avaliou:
+        # Se for um espertinho a tentar forçar o URL, é redirecionado imediatamente!
+        return redirect('professor_avaliacoes', pk=professor.pk)
+    # ---------------------------------------
+
     if request.method == 'POST':
         form = NewAvaliacaoForm(request.POST)
         if form.is_valid():
@@ -84,7 +100,6 @@ def new_avaliacao(request, pk):
             avaliacao.starter = request.user
             avaliacao.save()
             
-            # AQUI ESTAVA O ERRO! Trocámos 'message' por 'texto'
             Comentario.objects.create(
                 texto=form.cleaned_data.get('texto'), 
                 avaliacao=avaliacao,
@@ -94,7 +109,6 @@ def new_avaliacao(request, pk):
     else:
         form = NewAvaliacaoForm()
     return render(request, 'new_avaliacao.html', {'professor': professor, 'form': form})
-
 
 @login_required
 def reply_avaliacao(request, pk, avaliacao_pk):
@@ -148,3 +162,7 @@ class ComentarioUpdateView(UpdateView):
         comentario.save()
         # O caminho de volta está perfeito, usando os nomes corretos!
         return redirect('avaliacao_comentarios', pk=comentario.avaliacao.professor.pk, avaliacao_pk=comentario.avaliacao.pk)
+    
+# Adicione esta função para evitar erros com a rota 'about' do seu urls.py
+def about(request):
+    return render(request, 'about.html')

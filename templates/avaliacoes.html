@@ -12,7 +12,11 @@
 
 {% block content %}
   <div class="mb-4">
-    <a href="{% url 'new_avaliacao' professor.pk %}" class="btn btn-primary">Nova Avaliação</a>
+    {% if not usuario_ja_avaliou %}
+      <a href="{% url 'new_avaliacao' professor.pk %}" class="btn btn-primary">Nova Avaliação</a>
+    {% else %}
+      <button class="btn btn-secondary" disabled>Você já avaliou este professor</button>
+    {% endif %}
   </div>
 
   <div class="table-responsive">
