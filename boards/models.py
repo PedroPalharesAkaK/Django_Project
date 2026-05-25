@@ -5,33 +5,47 @@ from django.utils.html import mark_safe
 from markdown import markdown
 import math
 
-class Professor(models.Model): # Antigo Board
-    nome = models.CharField(max_length=30, unique=True) # Antigo name
-    descricao = models.CharField(max_length=100) # Antigo description
+# IMPORTANTE: Importamos os validadores para garantir que a nota não passa de 5 nem desce de 0
+from django.core.validators import MinValueValidator, MaxValueValidator
+
+class Professor(models.Model):
+    nome = models.CharField(max_length=30, unique=True)
+    descricao = models.CharField(max_length=100)
+    
+    # NOVOS CAMPOS PARA O PERFIL DO PROFESSOR
+    # biografia guarda o Lattes/Trajetória. Usamos TextField para textos longos.
+    biografia = models.TextField(max_length=2000, blank=True, null=True) 
+    # foto_url guarda o link da foto temporariamente para não termos de configurar o upload de imagens agora
+    foto_url = models.URLField(max_length=500, blank=True, null=True)
 
     def __str__(self):
         return self.nome
 
-    # 1. Contagem de Comentários
     def get_comentarios_count(self):
         return Comentario.objects.filter(avaliacao__professor=self).count()
 
-    # 2. Contagem de Avaliações
     def get_avaliacoes_count(self):
         return self.avaliacoes.count()
 
-    # 3. Dados do Último Comentário
     def get_last_comentario(self):
         return Comentario.objects.filter(avaliacao__professor=self).order_by('-created_at').first()
 
 
-class Avaliacao(models.Model): # Antigo Topic
-    titulo = models.CharField(max_length=255) # Antigo subject
+class Avaliacao(models.Model):
+    titulo = models.CharField(max_length=255)
     last_updated = models.DateTimeField(auto_now_add=True)
     
-    professor = models.ForeignKey(Professor, on_delete=models.CASCADE, related_name='avaliacoes') # Antigo board
+    professor = models.ForeignKey(Professor, on_delete=models.CASCADE, related_name='avaliacoes')
     starter = models.ForeignKey(User, on_delete=models.CASCADE, related_name='avaliacoes_criadas')
     views = models.PositiveIntegerField(default=0) 
+
+    # NOVOS CAMPOS DE NOTAS (De 0 a 5)
+    # Colocamos default=0 para que as avaliações antigas não quebrem a base de dados
+    nota_geral = models.IntegerField(default=0, validators=[MinValueValidator(0), MaxValueValidator(5)])
+    nota_didatica = models.IntegerField(default=0, validators=[MinValueValidator(0), MaxValueValidator(5)])
+    nota_empenho = models.IntegerField(default=0, validators=[MinValueValidator(0), MaxValueValidator(5)])
+    nota_relacao = models.IntegerField(default=0, validators=[MinValueValidator(0), MaxValueValidator(5)])
+    nota_dificuldade = models.IntegerField(default=0, validators=[MinValueValidator(0), MaxValueValidator(5)])
 
     def __str__(self):
         return self.titulo
@@ -53,13 +67,12 @@ class Avaliacao(models.Model): # Antigo Topic
         return range(1, count + 1)
         
     def get_last_ten_comentarios(self):
-        # Puxa os posts ordenados do mais recente para o mais antigo, limitando a 10
         return self.comentarios.order_by('-created_at')[:10]
 
 
-class Comentario(models.Model): # Antigo Post
-    texto = models.TextField(max_length=4000) # Antigo message
-    avaliacao = models.ForeignKey(Avaliacao, related_name='comentarios', on_delete=models.CASCADE) # Antigo topic
+class Comentario(models.Model):
+    texto = models.TextField(max_length=4000)
+    avaliacao = models.ForeignKey(Avaliacao, related_name='comentarios', on_delete=models.CASCADE)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(null=True)
     created_by = models.ForeignKey(User, related_name='comentarios_feitos', on_delete=models.CASCADE)
