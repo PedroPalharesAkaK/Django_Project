@@ -4,6 +4,7 @@ from django.db.models import F
 from django.utils.html import mark_safe
 from markdown import markdown
 import math
+from django.db.models import Avg
 
 # IMPORTANTE: Importamos os validadores para garantir que a nota não passa de 5 nem desce de 0
 from django.core.validators import MinValueValidator, MaxValueValidator
@@ -29,6 +30,36 @@ class Professor(models.Model):
 
     def get_last_comentario(self):
         return Comentario.objects.filter(avaliacao__professor=self).order_by('-created_at').first()
+    # Certifique-se de que este import está no topo do seu models.py
+
+    def _get_avg(self, field_name):
+        """Método auxiliar interno para calcular a média de um quesito"""
+        avg = self.avaliacoes.aggregate(Avg(field_name))[f'{field_name}__avg']
+        return round(avg, 1) if avg else 0
+
+    # Métodos que devolvem a nota decimal (Ex: 4.3)
+    def get_media_geral(self): return self._get_avg('nota_geral')
+    def get_media_didatica(self): return self._get_avg('nota_didatica')
+    def get_media_empenho(self): return self._get_avg('nota_empenho')
+    def get_media_relacao(self): return self._get_avg('nota_relacao')
+    def get_media_dificuldade(self): return self._get_avg('nota_dificuldade')
+
+    # Métodos que convertem a nota em percentagem para preencher a barra de progresso (0 a 100%)
+    # Métodos que convertem a nota em percentagem para preencher a barra de progresso (0 a 100%)
+    def get_percent_geral(self): 
+        return int((self.get_media_geral() / 5) * 100)
+        
+    def get_percent_didatica(self): 
+        return int((self.get_media_didatica() / 5) * 100)
+        
+    def get_percent_empenho(self): 
+        return int((self.get_media_empenho() / 5) * 100)
+        
+    def get_percent_relacao(self): 
+        return int((self.get_media_relacao() / 5) * 100)
+        
+    def get_percent_dificuldade(self): 
+        return int((self.get_media_dificuldade() / 5) * 100)
 
 
 class Avaliacao(models.Model):

@@ -5,18 +5,152 @@
   {{ professor.nome }} - {{ block.super }}
 {% endblock %}
 
+{% block stylesheet %}
+  <style>
+    /* Estilos do Painel do Professor */
+    .professor-card {
+      background: #fff;
+      border-radius: 8px;
+      border: none;
+    }
+    .profile-img {
+      width: 140px;
+      height: 140px;
+      object-fit: cover;
+      border-radius: 50%;
+      background-color: #f8f9fa;
+      border: 3px solid #e9ecef;
+    }
+    .progress {
+      height: 16px;
+      background-color: #e9ecef;
+      border-radius: 4px;
+      margin-bottom: 0;
+    }
+    .progress-bar {
+      background-color: #3b8cc6;
+      font-weight: bold;
+      font-size: 0.75rem;
+    }
+    .criterio-label {
+      font-weight: 500;
+      margin-bottom: 2px;
+      font-size: 0.88rem;
+      color: #333;
+    }
+    .biografia-box {
+      font-size: 0.95rem; 
+      line-height: 1.6; 
+      max-height: 175px; 
+      overflow-y: auto;
+    }
+  </style>
+{% endblock %}
+
 {% block breadcrumb %}
   <li class="breadcrumb-item"><a href="{% url 'home' %}">Professores</a></li>
   <li class="breadcrumb-item active">{{ professor.nome }}</li>
 {% endblock %}
 
 {% block content %}
-  <div class="mb-4">
-    {% if not usuario_ja_avaliou %}
-      <a href="{% url 'new_avaliacao' professor.pk %}" class="btn btn-primary">Nova Avaliação</a>
-    {% else %}
-      <button class="btn btn-secondary" disabled>Você já avaliou este professor</button>
-    {% endif %}
+  
+  <div class="card shadow-sm mb-4 professor-card">
+    <div class="card-body p-4">
+      <div class="row">
+        
+        <div class="col-md-3 text-center border-end d-flex flex-column align-items-center justify-content-center">
+          {% if professor.foto_url %}
+            <img src="{{ professor.foto_url }}" alt="{{ professor.nome }}" class="profile-img mb-3">
+          {% else %}
+            <svg class="profile-img mb-3 text-secondary p-2" fill="currentColor" viewBox="0 0 24 24">
+              <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
+            </svg>
+          {% endif %}
+          <h4 class="fw-bold mb-1">{{ professor.nome }}</h4>
+          <p class="text-muted small mb-0">{{ professor.descricao }}</p>
+        </div>
+
+        <div class="col-md-5 px-md-4 mt-4 mt-md-0 d-flex flex-column justify-content-center">
+          <h5 class="fw-bold text-secondary mb-3">Trajetória / Currículo Lattes</h5>
+          <div class="text-muted biografia-box">
+            {% if professor.biografia %}
+              {{ professor.biografia|linebreaks }}
+            {% else %}
+              <p class="fst-italic text-muted">Nenhuma trajetória académica ou link do currículo Lattes registado para este docente.</p>
+            {% endif %}
+          </div>
+        </div>
+
+        <div class="col-md-4 px-md-4 mt-4 mt-md-0 border-start d-flex flex-column justify-content-center">
+          <h5 class="fw-bold text-secondary mb-3">Médias Gerais</h5>
+          
+          <div class="mb-2">
+            <div class="d-flex justify-content-between criterio-label">
+              <span>Nota Geral</span>
+              <span class="fw-bold text-primary">{{ professor.get_media_geral }}/5</span>
+            </div>
+            <div class="progress">
+              <div class="progress-bar" role="progressbar" style="width: {{ professor.get_percent_geral }}%;" aria-valuenow="{{ professor.get_media_geral }}" aria-valuemin="0" aria-valuemax="5"></div>
+            </div>
+          </div>
+
+          <div class="mb-2">
+            <div class="d-flex justify-content-between criterio-label">
+              <span>Didática</span>
+              <span class="fw-bold">{{ professor.get_media_didatica }}/5</span>
+            </div>
+            <div class="progress">
+              <div class="progress-bar" role="progressbar" style="width: {{ professor.get_percent_didatica }}%;" aria-valuenow="{{ professor.get_media_didatica }}" aria-valuemin="0" aria-valuemax="5"></div>
+            </div>
+          </div>
+
+          <div class="mb-2">
+            <div class="d-flex justify-content-between criterio-label">
+              <span>Empenho / Dedicação</span>
+              <span class="fw-bold">{{ professor.get_media_empenho }}/5</span>
+            </div>
+            <div class="progress">
+              <div class="progress-bar" role="progressbar" style="width: {{ professor.get_percent_empenho }}%;" aria-valuenow="{{ professor.get_media_empenho }}" aria-valuemin="0" aria-valuemax="5"></div>
+            </div>
+          </div>
+
+          <div class="mb-2">
+            <div class="d-flex justify-content-between criterio-label">
+              <span>Relação com os Alunos</span>
+              <span class="fw-bold">{{ professor.get_media_relacao }}/5</span>
+            </div>
+            <div class="progress">
+              <div class="progress-bar" role="progressbar" style="width: {{ professor.get_percent_relacao }}%;" aria-valuenow="{{ professor.get_media_relacao }}" aria-valuemin="0" aria-valuemax="5"></div>
+            </div>
+          </div>
+
+          <div class="mb-0">
+            <div class="d-flex justify-content-between criterio-label">
+              <span>Dificuldade</span>
+              <span class="fw-bold text-danger">{{ professor.get_media_dificuldade }}/5</span>
+            </div>
+            <div class="progress">
+              <div class="progress-bar bg-danger" role="progressbar" style="width: {{ professor.get_percent_dificuldade }}%;" aria-valuenow="{{ professor.get_media_dificuldade }}" aria-valuemin="0" aria-valuemax="5"></div>
+            </div>
+          </div>
+
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <div class="mb-4 d-flex justify-content-between align-items-center">
+    <div>
+      {% if not usuario_ja_avaliou %}
+        <a href="{% url 'new_avaliacao' professor.pk %}" class="btn btn-primary px-4">Nova Avaliação</a>
+      {% else %}
+        <button class="btn btn-secondary" disabled>Você já avaliou este professor</button>
+      {% endif %}
+    </div>
+    <div class="text-muted small">
+      Total de avaliações: <strong>{{ professor.get_avaliacoes_count }}</strong>
+    </div>
   </div>
 
   <div class="table-responsive">
@@ -34,15 +168,19 @@
         {% for avaliacao in avaliacoes %}
           {% url 'avaliacao_comentarios' professor.pk avaliacao.pk as avaliacao_url %}
           <tr>
-            <td class="text-start">
+            <td class="text-start align-middle">
               <p class="mb-1">
-                <a href="{{ avaliacao_url }}" class="fw-bold text-decoration-none">{{ avaliacao.titulo }}</a>
+                <a href="{{ avaliacao_url }}" class="fw-bold text-decoration-none text-dark">{{ avaliacao.titulo }}</a>
+                <span class="badge bg-primary text-white ms-2">★ {{ avaliacao.nota_geral }}/5</span>
               </p>
               
-              <div class="mb-2 mt-2">
-                <span class="badge bg-primary text-white p-1 me-1">Geral: {{ avaliacao.nota_geral }}/5</span>
-                
-              </div>
+              <small class="text-muted d-block mb-1">
+                {% with primeiro_comentario=avaliacao.comentarios.first %}
+                  {% if primeiro_comentario %}
+                    {{ primeiro_comentario.texto|truncatewords:15 }}
+                  {% endif %}
+                {% endwith %}
+              </small>
 
               <small class="text-muted d-block">
                 Páginas:
@@ -58,12 +196,6 @@
             <td class="align-middle">{{ avaliacao.replies }}</td>
             <td class="align-middle">{{ avaliacao.views }}</td>
             <td class="align-middle">{{ avaliacao.last_updated|naturaltime }}</td>
-          </tr>
-        {% empty %}
-          <tr>
-            <td colspan="5" class="text-center text-muted py-4">
-              Ainda não há avaliações para este professor. Seja o primeiro a avaliar!
-            </td>
           </tr>
         {% endfor %}
       </tbody>
