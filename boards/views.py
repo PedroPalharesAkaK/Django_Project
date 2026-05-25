@@ -69,7 +69,7 @@ class PostListView(ListView):
 
     def get_queryset(self):
         # Vai buscar o tópico à base de dados para podermos listar os posts
-        self.topic = get_object_or_404(Topic, board__pk=self.kwargs.get('pk'), pk=self.kwargs.get('topic_pk'))
+        self.topic = get_object_or_404(Topic, board__pk=self.kwargs.get('pk'), pk=self.kwargs.get('topic_pk')) #os dois pk tem q existir
         queryset = self.topic.posts.order_by('created_at')
         return queryset
 
