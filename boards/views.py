@@ -23,15 +23,15 @@ class ProfessorListView(ListView):
 
 class AvaliacaoListView(ListView):
     model = Professor  # O Django 6 precisa saber o modelo base para construir a view
-    context_object_name = 'avaliacaos'
-    template_name = 'avaliacaos.html'
+    context_object_name = 'avaliacoes'
+    template_name = 'avaliacoes.html'
     paginate_by = 20
 
     def get_queryset(self):
         # Busca o professor ou joga o erro 404
         self.professor = get_object_or_404(Professor, pk=self.kwargs.get('pk'))
         # Traz os tópicos pertencentes a este professor específico
-        queryset = self.professor.avaliacaos.order_by('-last_updated').annotate(replies=Count('comentarios') - 1)
+        queryset = self.professor.avaliacoes.order_by('-last_updated').annotate(replies=Count('comentarios') - 1)
         return queryset
 
     def get_context_data(self, **kwargs):
@@ -79,21 +79,20 @@ def new_avaliacao(request, pk):
     if request.method == 'POST':
         form = NewAvaliacaoForm(request.POST)
         if form.is_valid():
-            with transaction.atomic():
-                avaliacao = form.save(commit=False)
-                avaliacao.professor = professor
-                avaliacao.starter = request.user
-                avaliacao.save()
-                Comentario.objects.create(
-                    message=form.cleaned_data.get('message'),
-                    avaliacao=avaliacao,
-                    created_by=request.user
-                )
-            return redirect('avaliacao_comentarios', pk=pk, avaliacao_pk=avaliacao.pk)
+            avaliacao = form.save(commit=False)
+            avaliacao.professor = professor
+            avaliacao.starter = request.user
+            avaliacao.save()
+            
+            # AQUI ESTAVA O ERRO! Trocámos 'message' por 'texto'
+            Comentario.objects.create(
+                texto=form.cleaned_data.get('texto'), 
+                avaliacao=avaliacao,
+                created_by=request.user
+            )
+            return redirect('avaliacao_comentarios', pk=professor.pk, avaliacao_pk=avaliacao.pk)
     else:
         form = NewAvaliacaoForm()
-    
-    # ESTA LINHA DEVE FICAR AQUI (ALINHADA COM O PRIMEIRO IF)
     return render(request, 'new_avaliacao.html', {'professor': professor, 'form': form})
 
 
@@ -128,8 +127,8 @@ def reply_avaliacao(request, pk, avaliacao_pk):
 
 @method_decorator(login_required, name='dispatch')
 class ComentarioUpdateView(UpdateView):
-    model = Comentario                         # Mantenha isso para o Django 6 saber que o foco é a tabela Comentario
-    fields = ('message', )
+    model = Comentario                         
+    fields = ('texto', )  # Correção: 'message' agora é 'texto'
     template_name = 'edit_comentario.html'
     pk_url_kwarg = 'comentario_pk'
     context_object_name = 'comentario'
@@ -147,4 +146,5 @@ class ComentarioUpdateView(UpdateView):
         comentario.updated_by = self.request.user
         comentario.updated_at = timezone.now()
         comentario.save()
+        # O caminho de volta está perfeito, usando os nomes corretos!
         return redirect('avaliacao_comentarios', pk=comentario.avaliacao.professor.pk, avaliacao_pk=comentario.avaliacao.pk)

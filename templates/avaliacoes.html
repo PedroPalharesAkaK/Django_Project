@@ -1,0 +1,65 @@
+{% extends 'base.html' %}
+{% load humanize %}
+
+{% block title %}
+  {{ professor.nome }} - {{ block.super }}
+{% endblock %}
+
+{% block breadcrumb %}
+  <li class="breadcrumb-item"><a href="{% url 'home' %}">Professores</a></li>
+  <li class="breadcrumb-item active">{{ professor.nome }}</li>
+{% endblock %}
+
+{% block content %}
+  <div class="mb-4">
+    <a href="{% url 'new_avaliacao' professor.pk %}" class="btn btn-primary">Nova Avaliação</a>
+  </div>
+
+  <div class="table-responsive">
+    <table class="table table-striped border">
+      <thead class="table-dark">
+        <tr>
+          <th>Avaliação</th>
+          <th>Autor</th>
+          <th>Comentários</th>
+          <th>Visualizações</th>
+          <th>Última Atualização</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for avaliacao in avaliacoes %}
+          {% url 'avaliacao_comentarios' professor.pk avaliacao.pk as avaliacao_url %}
+          <tr>
+            <td>
+              <p class="mb-0">
+                <a href="{{ avaliacao_url }}">{{ avaliacao.titulo }}</a>
+              </p>
+              <small class="text-muted">
+                Páginas:
+                {% for i in avaliacao.get_page_range %}
+                  <a href="{{ avaliacao_url }}?page={{ i }}">{{ i }}</a>
+                {% endfor %}
+                {% if avaliacao.has_many_pages %}
+                  ... <a href="{{ avaliacao_url }}?page={{ avaliacao.get_page_count }}">Última Página</a>
+                {% endif %}
+              </small>
+            </td>
+            <td class="align-middle">{{ avaliacao.starter.username }}</td>
+            <td class="align-middle">{{ avaliacao.replies }}</td>
+            <td class="align-middle">{{ avaliacao.views }}</td>
+            <td class="align-middle">{{ avaliacao.last_updated|naturaltime }}</td>
+          </tr>
+        {% empty %}
+          <tr>
+            <td colspan="5" class="text-center text-muted">
+              Ainda não há avaliações para este professor. Seja o primeiro a avaliar!
+            </td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+
+  {% include 'includes/pagination.html' %}
+
+{% endblock %}

@@ -1,0 +1,36 @@
+{% extends 'base.html' %}
+
+{% block title %}Editar Comentário{% endblock %}
+
+{% block stylesheet %}
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/simplemde/1.11.2/simplemde.min.css">
+{% endblock %}
+
+{% block breadcrumb %}
+  <li class="breadcrumb-item"><a href="{% url 'home' %}">Professores</a></li>
+  <li class="breadcrumb-item"><a href="{% url 'professor_avaliacoes' comentario.avaliacao.professor.pk %}">{{ comentario.avaliacao.professor.nome }}</a></li>
+  <li class="breadcrumb-item"><a href="{% url 'avaliacao_comentarios' comentario.avaliacao.professor.pk comentario.avaliacao.pk %}">{{ comentario.avaliacao.titulo }}</a></li>
+  <li class="breadcrumb-item active">Editar Comentário</li>
+{% endblock %}
+
+{% block content %}
+  <form method="post" class="mb-4" novalidate>
+    {% csrf_token %}
+    
+    {% include 'includes/form.html' %}
+    
+    <button type="submit" class="btn btn-success">Salvar Alterações</button>
+    
+    <a href="{% url 'avaliacao_comentarios' comentario.avaliacao.professor.pk comentario.avaliacao.pk %}" class="btn btn-outline-secondary" role="button">
+      Cancelar
+    </a>
+  </form>
+{% endblock %}
+
+{% block javascript %}
+  <script src="https://cdn.jsdelivr.net/simplemde/1.11.2/simplemde.min.js"></script>
+  <script>
+    // Transforma a caixa de texto simples do formulário num editor Markdown rico
+    var simplemde = new SimpleMDE({ forceSync: true });
+  </script>
+{% endblock %}
