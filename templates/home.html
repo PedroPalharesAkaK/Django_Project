@@ -1,44 +1,43 @@
 {% extends 'base.html' %}
 
-
 {% block breadcrumb %}
-  <li class="breadcrumb-item active">Boards</li>
+  <li class="breadcrumb-item active">Professores</li>
 {% endblock %}
 
 {% block content %}
   <table class="table table-striped border">
     <thead class="table-dark">
       <tr>
-        <th>Board</th>
-        <th>Posts</th>
-        <th>Topics</th>
-        <th>Last Post</th>
+        <th>Professor / Instituto</th>
+        <th>Comentários</th>
+        <th>Avaliações</th>
+        <th>Última Atividade</th>
       </tr>
     </thead>
     <tbody>
-      {% for board in boards %}
+      {% for professor in professors %}
         <tr>
           <td>
-            <a href="{% url 'board_topics' board.pk %}">{{ board.name }}</a>
-            <small class="text-muted d-block">{{ board.description }}</small>
+            <a href="{% url 'professor_avaliacoes' professor.pk %}">{{ professor.nome }}</a>
+            <small class="text-muted d-block">{{ professor.descricao }}</small>
           </td>
           <td class="align-middle">
-            {{ board.get_posts_count }}
+            {{ professor.get_comentarios_count }}
           </td>
           <td class="align-middle">
-            {{ board.get_topics_count }}
+            {{ professor.get_avaliacoes_count }}
           </td>
           <td class="align-middle">
-            {% with post=board.get_last_post %}
-              {% if post %}
+            {% with comentario=professor.get_last_comentario %}
+              {% if comentario %}
                 <small>
-                  <a href="{% url 'topic_posts' board.pk post.topic.pk %}">
-                    By {{ post.created_by.username }} at {{ post.created_at|date:"d/m/Y H:i" }}
+                  <a href="{% url 'avaliacao_comentarios' professor.pk comentario.avaliacao.pk %}">
+                    Por {{ comentario.created_by.username }} em {{ comentario.created_at|date:"d/m/Y H:i" }}
                   </a>
                 </small>
               {% else %}
                 <small class="text-muted">
-                  <em>No posts yet.</em>
+                  <em>Sem avaliações ainda.</em>
                 </small>
               {% endif %}
             {% endwith %}
