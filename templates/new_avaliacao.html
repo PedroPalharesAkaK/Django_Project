@@ -1,17 +1,170 @@
 {% extends 'base.html' %}
 
-{% block title %}Nova Avaliação{% endblock %}
+{% block title %}Avaliar Professor{% endblock %}
+
+{% block stylesheet %}
+  <style>
+    /* 1. O SEGREDO DO DESIGN: Transformar bolinhas de rádio em blocos */
+    .radio-toolbar {
+      display: flex;
+      gap: 8px;
+      margin-top: 5px;
+    }
+    
+    /* Esconde a bolinha padrão do navegador */
+    .radio-toolbar input[type="radio"] {
+      display: none; 
+    }
+    
+    /* Desenha os quadrados cinzentos exatamente como no seu print */
+    .radio-toolbar label {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 45px;
+      height: 45px;
+      background-color: #e6e6e6;
+      color: #888;
+      font-weight: 500;
+      font-size: 1.1rem;
+      cursor: pointer;
+      transition: all 0.2s ease-in-out;
+      border-radius: 3px;
+    }
+    
+    /* O Azul que aparece quando o utilizador clica no número */
+    .radio-toolbar input[type="radio"]:checked + label {
+      background-color: #3b8cc6; 
+      color: white;
+    }
+    
+    /* Efeito de passar o rato (Hover) */
+    .radio-toolbar label:hover {
+      background-color: #d4d4d4;
+      color: #444;
+    }
+
+    /* Linhas separadoras elegantes entre os quesitos */
+    .criterio-row {
+      border-bottom: 1px solid #f0f0f0;
+      padding-bottom: 12px;
+      margin-bottom: 15px;
+    }
+    
+    .criterio-row:last-child {
+      border-bottom: none;
+      margin-bottom: 0;
+    }
+
+    /* Borda divisória para ecrãs grandes */
+    @media (min-width: 768px) {
+      .divisor-colunas {
+        border-right: 1px solid #e0e0e0;
+      }
+    }
+  </style>
+{% endblock %}
 
 {% block breadcrumb %}
   <li class="breadcrumb-item"><a href="{% url 'home' %}">Professores</a></li>
   <li class="breadcrumb-item"><a href="{% url 'professor_avaliacoes' professor.pk %}">{{ professor.nome }}</a></li>
-  <li class="breadcrumb-item active">Nova Avaliação</li>
+  <li class="breadcrumb-item active">Avaliar</li>
 {% endblock %}
 
 {% block content %}
-  <form method="post" novalidate>
-    {% csrf_token %}
-    {% include 'includes/form.html' %}
-    <button type="submit" class="btn btn-success">Publicar Avaliação</button>
-  </form>
+  <div class="row justify-content-center">
+    <div class="col-lg-10">
+      
+      <div class="card shadow-sm mb-5 border-0">
+        <div class="card-body p-4 p-md-5">
+          <h4 class="mb-3">{{ professor.nome }}</h4>
+          
+          <p class="text-muted border-bottom pb-3 mb-4">
+            Escolha uma nota entre 0 e 5 para avaliar <strong>{{ professor.nome }}</strong> nos seguintes quesitos. Em dificuldade, notas maiores significam maior dificuldade. Após avaliar, a sua pontuação fará parte da média geral do professor.
+          </p>
+          
+          <form method="post" novalidate>
+            {% csrf_token %}
+
+            {% if form.non_field_errors %}
+              <div class="alert alert-danger">
+                {% for error in form.non_field_errors %}
+                  {{ error }}
+                {% endfor %}
+              </div>
+            {% endif %}
+
+            <div class="row">
+              
+              <div class="col-md-6 pe-md-4 divisor-colunas">
+                
+                {% for field in form %}
+                  {% if field.name != 'titulo' and field.name != 'texto' %}
+                    <div class="criterio-row">
+                      <strong class="d-block mb-2">{{ field.label }}</strong>
+                      
+                      {% if field.errors %}
+                        <div class="text-danger small mb-1">{{ field.errors|join:", " }}</div>
+                      {% endif %}
+                      
+                      <div class="radio-toolbar">
+                        {% for value, text in field.field.choices %}
+                          <input type="radio" id="id_{{ field.name }}_{{ value }}" name="{{ field.name }}" value="{{ value }}" {% if field.value|stringformat:"s" == value|stringformat:"s" %}checked{% endif %} required>
+                          <label for="id_{{ field.name }}_{{ value }}">{{ text }}</label>
+                        {% endfor %}
+                      </div>
+                    </div>
+                  {% endif %}
+                {% endfor %}
+                
+              </div>
+
+              <div class="col-md-6 ps-md-4 mt-4 mt-md-0 d-flex flex-column">
+                
+                <div class="mb-4">
+                  <label for="{{ form.titulo.id_for_label }}" class="fw-bold mb-2">{{ form.titulo.label }}</label>
+                  {% if form.titulo.errors %}
+                    <div class="text-danger small">{{ form.titulo.errors|join:", " }}</div>
+                  {% endif %}
+                  {{ form.titulo }}
+                </div>
+
+                <div class="mb-4 flex-grow-1">
+                  <label for="{{ form.texto.id_for_label }}" class="fw-bold mb-2">{{ form.texto.label }}</label>
+                  {% if form.texto.errors %}
+                    <div class="text-danger small">{{ form.texto.errors|join:", " }}</div>
+                  {% endif %}
+                  {{ form.texto }}
+                  {% if form.texto.help_text %}
+                    <small class="form-text text-muted d-block mt-1">{{ form.texto.help_text }}</small>
+                  {% endif %}
+                </div>
+
+                <div class="text-end mt-auto">
+                  <a href="{% url 'professor_avaliacoes' professor.pk %}" class="btn btn-light me-2 px-4">Cancelar</a>
+                  <button type="submit" class="btn btn-primary px-5">Avaliar</button>
+                </div>
+
+              </div>
+            </div>
+          </form>
+
+        </div>
+      </div>
+      
+    </div>
+  </div>
+{% endblock %}
+
+{% block javascript %}
+  <script>
+    // Como deixámos de usar o includes/form.html, este pequeno script garante 
+    // que as caixas de texto do Django ganham o aspeto arredondado do Bootstrap.
+    document.addEventListener("DOMContentLoaded", function() {
+      const textInputs = document.querySelectorAll('input[type="text"], textarea');
+      textInputs.forEach(function(input) {
+        input.classList.add('form-control');
+      });
+    });
+  </script>
 {% endblock %}

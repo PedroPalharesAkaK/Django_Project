@@ -2,21 +2,50 @@ from django import forms
 from .models import Avaliacao, Comentario
 
 class NewAvaliacaoForm(forms.ModelForm):
-    # Usamos 'texto' em vez de 'message' para ligar com o modelo Comentario
+    # Definimos as escolhas possíveis (0, 1, 2, 3, 4, 5)
+    NOTAS_CHOICES = [(i, str(i)) for i in range(6)]
+
+    # Transformamos os campos numéricos em Radio Buttons para facilitar o clique
+    nota_geral = forms.TypedChoiceField(
+        choices=NOTAS_CHOICES, coerce=int, widget=forms.RadioSelect, label='Avaliação Geral'
+    )
+    nota_didatica = forms.TypedChoiceField(
+        choices=NOTAS_CHOICES, coerce=int, widget=forms.RadioSelect, label='Didática'
+    )
+    nota_empenho = forms.TypedChoiceField(
+        choices=NOTAS_CHOICES, coerce=int, widget=forms.RadioSelect, label='Empenho/Dedicação'
+    )
+    nota_relacao = forms.TypedChoiceField(
+        choices=NOTAS_CHOICES, coerce=int, widget=forms.RadioSelect, label='Relação com os alunos'
+    )
+    nota_dificuldade = forms.TypedChoiceField(
+        choices=NOTAS_CHOICES, coerce=int, widget=forms.RadioSelect, label='Dificuldade'
+    )
+
     texto = forms.CharField(
         widget=forms.Textarea(attrs={'rows': 5, 'placeholder': 'Qual a sua opinião sobre o professor?'}), 
         max_length=4000,
-        help_text='O tamanho máximo do texto é 4000 caracteres.'
+        help_text='O tamanho máximo do texto é 4000 caracteres.',
+        label='Comentário'
     )
 
     class Meta:
         model = Avaliacao
-        fields = ['titulo', 'texto'] # 'subject' virou 'titulo'
+        # Agora dizemos ao Django para incluir todos os campos novos na página de criação!
+        fields = [
+            'titulo', 
+            'nota_geral', 
+            'nota_didatica', 
+            'nota_empenho', 
+            'nota_relacao', 
+            'nota_dificuldade', 
+            'texto'
+        ]
 
 class ComentarioForm(forms.ModelForm):
     class Meta:
         model = Comentario
-        fields = ['texto',] # 'message' virou 'texto'
+        fields = ['texto',] 
         widgets = {
-            'texto': forms.Textarea(attrs={'rows': 5, 'placeholder': 'Escreva seu comentário aqui...'})
+            'texto': forms.Textarea(attrs={'rows': 5, 'placeholder': 'Escreva a sua resposta aqui...'})
         }
