@@ -3,36 +3,41 @@ from django.contrib.auth.models import User
 from django.test import TestCase
 from django.urls import resolve, reverse
 
-from ..models import Board, Post, Topic
-from ..views import PostUpdateView
+# 1. IMPORTAÇÕES ATUALIZADAS: Chamando os novos Modelos e a nova View
+from ..models import Professor, Avaliacao, Comentario
+from ..views import ComentarioUpdateView
 
 
-class PostUpdateViewTestCase(TestCase):
+class ComentarioUpdateViewTestCase(TestCase):
     """
-    Base test case to be used in all `PostUpdateView` view tests
+    Base test case to be used in all `ComentarioUpdateView` view tests
     """
     def setUp(self):
-        self.board = Board.objects.create(name='Django', description='Django board.')
+        # 2. SETUP ATUALIZADO: Criando Professor, Avaliação e Comentário
+        self.professor = Professor.objects.create(nome='Professor de Teste', descricao='Instituto de Física')
         self.username = 'john'
         self.password = '123'
         user = User.objects.create_user(username=self.username, email='john@doe.com', password=self.password)
-        self.topic = Topic.objects.create(subject='Hello, world', board=self.board, starter=user)
-        self.post = Post.objects.create(message='Lorem ipsum dolor sit amet', topic=self.topic, created_by=user)
-        self.url = reverse('edit_post', kwargs={
-            'pk': self.board.pk,
-            'topic_pk': self.topic.pk,
-            'post_pk': self.post.pk
+        
+        self.avaliacao = Avaliacao.objects.create(titulo='Avaliação Teste', professor=self.professor, starter=user)
+        self.comentario = Comentario.objects.create(texto='Comentário original', avaliacao=self.avaliacao, created_by=user)
+        
+        # 3. ROTA ATUALIZADA: Usando os novos kwargs
+        self.url = reverse('edit_comentario', kwargs={
+            'pk': self.professor.pk,
+            'avaliacao_pk': self.avaliacao.pk,
+            'comentario_pk': self.comentario.pk
         })
 
 
-class LoginRequiredPostUpdateViewTests(PostUpdateViewTestCase):
+class LoginRequiredComentarioUpdateViewTests(ComentarioUpdateViewTestCase):
     def test_redirection(self):
         login_url = reverse('login')
         response = self.client.get(self.url)
         self.assertRedirects(response, '{login_url}?next={url}'.format(login_url=login_url, url=self.url))
 
 
-class UnauthorizedPostUpdateViewTests(PostUpdateViewTestCase):
+class UnauthorizedComentarioUpdateViewTests(ComentarioUpdateViewTestCase):
     def setUp(self):
         super().setUp()
         username = 'jane'
@@ -46,25 +51,23 @@ class UnauthorizedPostUpdateViewTests(PostUpdateViewTestCase):
         A topic should be edited only by the owner.
         Unauthorized users should get a 404 response (Page Not Found)
         """
-        # CORREÇÃO DJANGO 6: Mudado de assertEquals para assertEqual
         self.assertEqual(self.response.status_code, 404)
 
 
-class PostUpdateViewTests(PostUpdateViewTestCase):
+class ComentarioUpdateViewTests(ComentarioUpdateViewTestCase):
     def setUp(self):
         super().setUp()
         self.client.login(username=self.username, password=self.password)
         self.response = self.client.get(self.url)
 
     def test_status_code(self):
-        # CORREÇÃO DJANGO 6: Mudado de assertEquals para assertEqual
         self.assertEqual(self.response.status_code, 200)
 
     def test_view_class(self):
-        # CORREÇÃO DJANGO 6: Usando f-string dinâmica para evitar IDs estáticos quebrados
-        dynamic_url = f'/boards/{self.board.pk}/topics/{self.topic.pk}/posts/{self.post.pk}/edit/'
+        # 4. ROTA DE RESOLVE ATUALIZADA: Adequada ao urls.py
+        dynamic_url = f'/professores/{self.professor.pk}/avaliacoes/{self.avaliacao.pk}/comentarios/{self.comentario.pk}/edit/'
         view = resolve(dynamic_url)
-        self.assertEqual(view.func.view_class, PostUpdateView)
+        self.assertEqual(view.func.view_class, ComentarioUpdateView)
 
     def test_csrf(self):
         self.assertContains(self.response, 'csrfmiddlewaretoken')
@@ -77,33 +80,33 @@ class PostUpdateViewTests(PostUpdateViewTestCase):
         """
         The view must contain the message textarea
         """
-        # CORREÇÃO DJANGO 6: Focar no <textarea que realmente importa para a mensagem
         self.assertContains(self.response, '<textarea', 1)
 
 
-class SuccessfulPostUpdateViewTests(PostUpdateViewTestCase):
+class SuccessfulComentarioUpdateViewTests(ComentarioUpdateViewTestCase):
     def setUp(self):
         super().setUp()
         self.client.login(username=self.username, password=self.password)
-        self.response = self.client.post(self.url, {'message': 'edited message'})
+        # 5. ATUALIZAÇÃO DE CAMPO: Enviando 'texto' em vez de 'message'
+        self.response = self.client.post(self.url, {'texto': 'texto editado'})
 
     def test_redirection(self):
         """
         A valid form submission should redirect the user
         """
-        topic_posts_url = reverse('topic_posts', kwargs={'pk': self.board.pk, 'topic_pk': self.topic.pk})
-        self.assertRedirects(self.response, topic_posts_url)
+        # 6. REDIRECIONAMENTO ATUALIZADO: Apontando para os comentários da avaliação
+        avaliacao_comentarios_url = reverse('avaliacao_comentarios', kwargs={'pk': self.professor.pk, 'avaliacao_pk': self.avaliacao.pk})
+        self.assertRedirects(self.response, avaliacao_comentarios_url)
 
     def test_post_changed(self):
-        self.post.refresh_from_db()
-        # CORREÇÃO DJANGO 6: Mudado de assertEquals para assertEqual
-        self.assertEqual(self.post.message, 'edited message')
+        self.comentario.refresh_from_db()
+        self.assertEqual(self.comentario.texto, 'texto editado')
 
 
-class InvalidPostUpdateViewTests(PostUpdateViewTestCase):
+class InvalidComentarioUpdateViewTests(ComentarioUpdateViewTestCase):
     def setUp(self):
         """
-        Submit an empty dictionary to the `reply_topic` view
+        Submit an empty dictionary to the view
         """
         super().setUp()
         self.client.login(username=self.username, password=self.password)
@@ -113,7 +116,6 @@ class InvalidPostUpdateViewTests(PostUpdateViewTestCase):
         """
         An invalid form submission should return to the same page
         """
-        # CORREÇÃO DJANGO 6: Mudado de assertEquals para assertEqual
         self.assertEqual(self.response.status_code, 200)
 
     def test_form_errors(self):
