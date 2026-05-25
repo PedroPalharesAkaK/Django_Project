@@ -142,27 +142,74 @@ def reply_avaliacao(request, pk, avaliacao_pk):
 
 
 @method_decorator(login_required, name='dispatch')
+@method_decorator(login_required, name='dispatch')
 class ComentarioUpdateView(UpdateView):
-    model = Comentario                         
-    fields = ('texto', )  # Correção: 'message' agora é 'texto'
+    model = Comentario
     template_name = 'edit_comentario.html'
     pk_url_kwarg = 'comentario_pk'
     context_object_name = 'comentario'
 
     def get_queryset(self):
         """
-        Filtragem do banco de dados: traz apenas os comentarios onde o criador 
-        seja o usuário logado na requisição (self.request.user).
+        SEGURANÇA PASSO 1: Traz apenas os comentários do utilizador logado.
         """
-        queryset = super().get_queryset()
-        return queryset.filter(created_by=self.request.user)
+        return super().get_queryset().filter(created_by=self.request.user)
+
+    def _is_autor_original(self, comentario):
+        """
+        Função auxiliar de Segurança: Verifica se é o dono da Avaliação E se este 
+        é o primeiro comentário (a review original, não uma mera resposta).
+        """
+        avaliacao = comentario.avaliacao
+        primeiro_comentario = avaliacao.comentarios.order_by('created_at').first()
+        return self.request.user == avaliacao.starter and comentario == primeiro_comentario
+
+    def get_form_class(self):
+        """
+        SEGURANÇA PASSO 2: O Camaleão. Escolhe qual formulário carregar.
+        """
+        comentario = self.get_object()
+        if self._is_autor_original(comentario):
+            return NewAvaliacaoForm # O formulário completo com Notas!
+        return ComentarioForm       # O formulário restrito (só texto)
+
+    def get_form_kwargs(self):
+        """
+        Preenche os campos antigos na tela para o utilizador poder editar.
+        """
+        kwargs = super().get_form_kwargs()
+        comentario = self.get_object()
+
+        if self._is_autor_original(comentario):
+            # Enganamos o formulário para ele ler as notas gravadas na Avaliação
+            kwargs['instance'] = comentario.avaliacao
+            # E enviamos o texto do comentário à parte
+            if 'initial' not in kwargs:
+                kwargs['initial'] = {}
+            kwargs['initial']['texto'] = comentario.texto
+            
+        return kwargs
 
     def form_valid(self, form):
-        comentario = form.save(commit=False)
+        """
+        SEGURANÇA PASSO 3: Gravar as alterações de forma cirúrgica.
+        """
+        comentario = self.get_object()
+
+        if self._is_autor_original(comentario):
+            # 1. Salva as novas notas e título na Avaliação (banco de dados)
+            form.save()
+            # 2. Atualiza o texto que pertence ao Comentário
+            comentario.texto = form.cleaned_data.get('texto')
+        else:
+            # Comportamento padrão: atualiza só o texto do comentário secundário
+            comentario = form.save(commit=False)
+
         comentario.updated_by = self.request.user
         comentario.updated_at = timezone.now()
         comentario.save()
-        # O caminho de volta está perfeito, usando os nomes corretos!
+
+        # O caminho de volta continua perfeito!
         return redirect('avaliacao_comentarios', pk=comentario.avaliacao.professor.pk, avaliacao_pk=comentario.avaliacao.pk)
     
 # Adicione esta função para evitar erros com a rota 'about' do seu urls.py

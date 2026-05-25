@@ -1,36 +1,116 @@
 {% extends 'base.html' %}
 
-{% block title %}Editar Comentário{% endblock %}
+{% block title %}Editar Avaliação{% endblock %}
 
 {% block stylesheet %}
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/simplemde/1.11.2/simplemde.min.css">
+  <style>
+    /* O CSS mágico dos botões de notas */
+    .radio-toolbar {
+      display: flex;
+      gap: 8px;
+      margin-top: 5px;
+    }
+    .radio-toolbar input[type="radio"] { display: none; }
+    
+    .radio-toolbar label {
+      display: inline-flex; align-items: center; justify-content: center;
+      width: 45px; height: 45px; background-color: #e6e6e6;
+      color: #888; font-weight: 500; font-size: 1.1rem;
+      cursor: pointer; transition: all 0.2s ease-in-out; border-radius: 3px;
+    }
+    
+    .radio-toolbar input[type="radio"]:checked + label {
+      background-color: #3b8cc6; color: white;
+    }
+    
+    .radio-toolbar label:hover {
+      background-color: #d4d4d4; color: #444;
+    }
+    
+    .criterio-row {
+      border-bottom: 1px solid #f0f0f0; padding-bottom: 12px; margin-bottom: 15px;
+    }
+    .criterio-row:last-child {
+      border-bottom: none; margin-bottom: 0;
+    }
+  </style>
 {% endblock %}
 
 {% block breadcrumb %}
   <li class="breadcrumb-item"><a href="{% url 'home' %}">Professores</a></li>
   <li class="breadcrumb-item"><a href="{% url 'professor_avaliacoes' comentario.avaliacao.professor.pk %}">{{ comentario.avaliacao.professor.nome }}</a></li>
   <li class="breadcrumb-item"><a href="{% url 'avaliacao_comentarios' comentario.avaliacao.professor.pk comentario.avaliacao.pk %}">{{ comentario.avaliacao.titulo }}</a></li>
-  <li class="breadcrumb-item active">Editar Comentário</li>
+  <li class="breadcrumb-item active">Editar Avaliação</li>
 {% endblock %}
 
 {% block content %}
-  <form method="post" class="mb-4" novalidate>
-    {% csrf_token %}
-    
-    {% include 'includes/form.html' %}
-    
-    <button type="submit" class="btn btn-success">Salvar Alterações</button>
-    
-    <a href="{% url 'avaliacao_comentarios' comentario.avaliacao.professor.pk comentario.avaliacao.pk %}" class="btn btn-outline-secondary" role="button">
-      Cancelar
-    </a>
-  </form>
+  <div class="card shadow-sm mb-5 border-0">
+    <div class="card-body p-4">
+      <form method="post" novalidate>
+        {% csrf_token %}
+        
+        <div class="row">
+          <div class="col-md-5 pe-md-4">
+            <h5 class="mb-4">Atualizar Notas</h5>
+            
+            {% for field in form %}
+              {% if field.name != 'titulo' and field.name != 'texto' %}
+                <div class="criterio-row">
+                  <strong class="d-block mb-2">{{ field.label }}</strong>
+                  {% if field.errors %}
+                    <div class="text-danger small mb-1">{{ field.errors|join:", " }}</div>
+                  {% endif %}
+                  <div class="radio-toolbar">
+                    {% for value, text in field.field.choices %}
+                      <input type="radio" id="id_{{ field.name }}_{{ value }}" name="{{ field.name }}" value="{{ value }}" {% if field.value|stringformat:"s" == value|stringformat:"s" %}checked{% endif %} required>
+                      <label for="id_{{ field.name }}_{{ value }}">{{ text }}</label>
+                    {% endfor %}
+                  </div>
+                </div>
+              {% endif %}
+            {% endfor %}
+          </div>
+
+          <div class="col-md-7 ps-md-4 border-start">
+            
+            {% if form.titulo %}
+              <div class="mb-3">
+                <label for="{{ form.titulo.id_for_label }}" class="fw-bold mb-2">Título da Avaliação</label>
+                {{ form.titulo }}
+                <div class="text-danger small">{{ form.titulo.errors }}</div>
+              </div>
+            {% endif %}
+            
+            <div class="mb-3">
+              <label for="{{ form.texto.id_for_label }}" class="fw-bold mb-2">Seu Comentário</label>
+              {{ form.texto }}
+              <div class="text-danger small">{{ form.texto.errors }}</div>
+            </div>
+
+            <div class="text-end mt-4">
+              <a href="{% url 'avaliacao_comentarios' comentario.avaliacao.professor.pk comentario.avaliacao.pk %}" class="btn btn-outline-secondary me-2">Cancelar</a>
+              <button type="submit" class="btn btn-success">Salvar Alterações</button>
+            </div>
+          </div>
+        </div>
+        
+      </form>
+    </div>
+  </div>
 {% endblock %}
 
 {% block javascript %}
   <script src="https://cdn.jsdelivr.net/simplemde/1.11.2/simplemde.min.js"></script>
   <script>
-    // Transforma a caixa de texto simples do formulário num editor Markdown rico
     var simplemde = new SimpleMDE({ forceSync: true });
+    
+    // Garante que o campo de Título herda o design arredondado do Bootstrap
+    document.addEventListener("DOMContentLoaded", function() {
+      const textInputs = document.querySelectorAll('input[type="text"]');
+      textInputs.forEach(function(input) {
+        input.classList.add('form-control');
+      });
+    });
   </script>
 {% endblock %}

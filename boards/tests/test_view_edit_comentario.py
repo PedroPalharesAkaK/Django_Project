@@ -6,6 +6,7 @@ from django.urls import resolve, reverse
 # 1. IMPORTAÇÕES ATUALIZADAS: Chamando os novos Modelos e a nova View
 from ..models import Professor, Avaliacao, Comentario
 from ..views import ComentarioUpdateView
+from ..forms import NewAvaliacaoForm, ComentarioForm
 
 
 class ComentarioUpdateViewTestCase(TestCase):
@@ -87,8 +88,20 @@ class SuccessfulComentarioUpdateViewTests(ComentarioUpdateViewTestCase):
     def setUp(self):
         super().setUp()
         self.client.login(username=self.username, password=self.password)
-        # 5. ATUALIZAÇÃO DE CAMPO: Enviando 'texto' em vez de 'message'
-        self.response = self.client.post(self.url, {'texto': 'texto editado'})
+        
+        # ATUALIZAÇÃO: Como estamos a testar a edição do primeiro comentário,
+        # o nosso Camaleão exige o pacote completo (Título, Texto e as 5 Notas).
+        data = {
+            'titulo': 'Avaliação Teste Editada',
+            'texto': 'texto editado',
+            'nota_geral': 5,
+            'nota_didatica': 4,
+            'nota_empenho': 5,
+            'nota_relacao': 4,
+            'nota_dificuldade': 3
+        }
+        self.response = self.client.post(self.url, data)
+
 
     def test_redirection(self):
         """
@@ -121,3 +134,97 @@ class InvalidComentarioUpdateViewTests(ComentarioUpdateViewTestCase):
     def test_form_errors(self):
         form = self.response.context.get('form')
         self.assertTrue(form.errors)
+
+class EditComentarioSegurancaTests(TestCase):
+    def setUp(self):
+        # 1. Cria o Professor e dois Alunos
+        self.professor = Professor.objects.create(nome='Prof Teste', descricao='Física')
+        self.user_autor = User.objects.create_user(username='autor', password='123')
+        self.user_aluno = User.objects.create_user(username='aluno2', password='123')
+
+        # 2. Cria a Avaliação e as Notas (O Tópico Pai)
+        self.avaliacao = Avaliacao.objects.create(
+            titulo='Review Original', professor=self.professor, starter=self.user_autor,
+            nota_geral=3, nota_didatica=3, nota_empenho=3, nota_relacao=3, nota_dificuldade=3
+        )
+        
+        # 3. Cria o 1º Comentário (A Review Original feita pelo autor)
+        self.primeiro_comentario = Comentario.objects.create(
+            texto='Texto original', avaliacao=self.avaliacao, created_by=self.user_autor
+        )
+
+        # 4. Cria o 2º Comentário (O próprio autor a responder ao seu tópico)
+        self.segundo_comentario = Comentario.objects.create(
+            texto='Esqueci-me de dizer algo...', avaliacao=self.avaliacao, created_by=self.user_autor
+        )
+
+        # 5. Cria o 3º Comentário (O outro aluno a responder)
+        self.terceiro_comentario = Comentario.objects.create(
+            texto='Concordo contigo!', avaliacao=self.avaliacao, created_by=self.user_aluno
+        )
+
+    def test_form_class_for_original_review(self):
+        """O autor a editar a avaliação original DEVE ver as Notas."""
+        self.client.login(username='autor', password='123')
+        url = reverse('edit_comentario', kwargs={
+            'pk': self.professor.pk,
+            'avaliacao_pk': self.avaliacao.pk,
+            'comentario_pk': self.primeiro_comentario.pk
+        })
+        response = self.client.get(url)
+        # Verifica se o Django enviou o formulário grande (com notas)
+        self.assertIsInstance(response.context.get('form'), NewAvaliacaoForm)
+
+    def test_form_class_for_reply_same_author(self):
+        """O autor a editar a sua própria resposta NÃO DEVE ver as Notas."""
+        self.client.login(username='autor', password='123')
+        url = reverse('edit_comentario', kwargs={
+            'pk': self.professor.pk,
+            'avaliacao_pk': self.avaliacao.pk,
+            'comentario_pk': self.segundo_comentario.pk
+        })
+        response = self.client.get(url)
+        # Verifica se o Django enviou o formulário simples
+        self.assertIsInstance(response.context.get('form'), ComentarioForm)
+
+    def test_form_class_for_reply_different_author(self):
+        """Outro aluno a editar a sua resposta NÃO DEVE ver as Notas."""
+        self.client.login(username='aluno2', password='123')
+        url = reverse('edit_comentario', kwargs={
+            'pk': self.professor.pk,
+            'avaliacao_pk': self.avaliacao.pk,
+            'comentario_pk': self.terceiro_comentario.pk
+        })
+        response = self.client.get(url)
+        # Verifica se o Django enviou o formulário simples
+        self.assertIsInstance(response.context.get('form'), ComentarioForm)
+
+    def test_successful_edit_original_review_updates_notes(self):
+        """Garante que ao salvar a edição, as notas mudam no Banco de Dados."""
+        self.client.login(username='autor', password='123')
+        url = reverse('edit_comentario', kwargs={
+            'pk': self.professor.pk,
+            'avaliacao_pk': self.avaliacao.pk,
+            'comentario_pk': self.primeiro_comentario.pk
+        })
+        
+        # Simulamos o envio de uma nota máxima e título novo
+        data = {
+            'titulo': 'Review Original Editada',
+            'texto': 'Texto editado',
+            'nota_geral': 5, # Subiu de 3 para 5
+            'nota_didatica': 5,
+            'nota_empenho': 5,
+            'nota_relacao': 5,
+            'nota_dificuldade': 5
+        }
+        self.client.post(url, data)
+        
+        # Atualizamos a nossa visão do banco de dados (refresh)
+        self.avaliacao.refresh_from_db()
+        self.primeiro_comentario.refresh_from_db()
+        
+        # Verifica se as notas e o texto foram de facto guardados
+        self.assertEqual(self.avaliacao.nota_geral, 5)
+        self.assertEqual(self.avaliacao.titulo, 'Review Original Editada')
+        self.assertEqual(self.primeiro_comentario.texto, 'Texto editado')
