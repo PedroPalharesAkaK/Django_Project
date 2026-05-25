@@ -1,6 +1,8 @@
 
-# Register your models here.
 from django.contrib import admin
-from .models import Board
+from .models import Professor, Avaliacao, Comentario
 
-admin.site.register(Board)
+# Registar as novas tabelas para aparecerem no painel /admin/
+admin.site.register(Professor)
+admin.site.register(Avaliacao)
+admin.site.register(Comentario)

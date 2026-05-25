@@ -1,42 +1,43 @@
 from django.db import models
 from django.contrib.auth.models import User
-from django.db.models import F  # <-- ADICIONE ESSE IMPORT!
-from django.utils.html import mark_safe  # <-- ADICIONE ESTA LINHA NO TOPO
+from django.db.models import F
+from django.utils.html import mark_safe
 from markdown import markdown
 import math
-class Board(models.Model):
-    name = models.CharField(max_length=30, unique=True)
-    description = models.CharField(max_length=100)
+
+class Professor(models.Model): # Antigo Board
+    nome = models.CharField(max_length=30, unique=True) # Antigo name
+    descricao = models.CharField(max_length=100) # Antigo description
 
     def __str__(self):
-        return self.name
+        return self.nome
 
-    # 1. Contagem de Posts (Exatamente como na imagem)
-    def get_posts_count(self):
-        return Post.objects.filter(topic__board=self).count() #tabela post, veja class post
+    # 1. Contagem de Comentários
+    def get_comentarios_count(self):
+        return Comentario.objects.filter(avaliacao__professor=self).count()
 
-    # 2. O QUE FALTOU NA IMAGEM: Contagem de Tópicos do Board
-    def get_topics_count(self):
-        return self.topics.count()  # Usa o related_name de Topic para contar direto!
+    # 2. Contagem de Avaliações
+    def get_avaliacoes_count(self):
+        return self.avaliacoes.count()
 
-    # 3. Dados do Último Post (Exatamente como na imagem)
-    def get_last_post(self):
-        return Post.objects.filter(topic__board=self).order_by('-created_at').first()
+    # 3. Dados do Último Comentário
+    def get_last_comentario(self):
+        return Comentario.objects.filter(avaliacao__professor=self).order_by('-created_at').first()
 
-class Topic(models.Model):
-    subject = models.CharField(max_length=255)
+
+class Avaliacao(models.Model): # Antigo Topic
+    titulo = models.CharField(max_length=255) # Antigo subject
     last_updated = models.DateTimeField(auto_now_add=True)
-    # ADICIONADO: on_delete=models.CASCADE
-    board = models.ForeignKey(Board, on_delete=models.CASCADE, related_name='topics')
-    #, the board field is a ForeignKey to the Board model. It is telling Django that a Topic instance relates to only one Board instance
-    #The related_name parameter will be used to create a reverse relationship where the Board instances will have access a list of Topic instances that belong to it.
-    starter = models.ForeignKey(User, on_delete=models.CASCADE, related_name='topics')
-    views = models.PositiveIntegerField(default=0) #topico nasce com 0 views
+    
+    professor = models.ForeignKey(Professor, on_delete=models.CASCADE, related_name='avaliacoes') # Antigo board
+    starter = models.ForeignKey(User, on_delete=models.CASCADE, related_name='avaliacoes_criadas')
+    views = models.PositiveIntegerField(default=0) 
+
     def __str__(self):
-        return self.subject
+        return self.titulo
 
     def get_page_count(self):
-        count = self.posts.count()
+        count = self.comentarios.count()
         pages = count / 20
         return math.ceil(pages)
 
@@ -50,21 +51,19 @@ class Topic(models.Model):
         if self.has_many_pages(count):
             return range(1, 5)
         return range(1, count + 1)
-    def get_last_ten_posts(self):
+        
+    def get_last_ten_comentarios(self):
         # Puxa os posts ordenados do mais recente para o mais antigo, limitando a 10
-        return self.posts.order_by('-created_at')[:10]
+        return self.comentarios.order_by('-created_at')[:10]
 
-class Post(models.Model):
-    message = models.TextField(max_length=4000)
-    topic = models.ForeignKey(Topic, related_name='posts', on_delete=models.CASCADE)
+
+class Comentario(models.Model): # Antigo Post
+    texto = models.TextField(max_length=4000) # Antigo message
+    avaliacao = models.ForeignKey(Avaliacao, related_name='comentarios', on_delete=models.CASCADE) # Antigo topic
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(null=True)
-    created_by = models.ForeignKey(User, related_name='posts', on_delete=models.CASCADE)
+    created_by = models.ForeignKey(User, related_name='comentarios_feitos', on_delete=models.CASCADE)
     updated_by = models.ForeignKey(User, null=True, related_name='+', on_delete=models.CASCADE)
 
-    # <-- ADICIONE ESTE BLOCO NO FINAL DA CLASSE POST -->
-    def get_message_as_markdown(self):
-        # Versão moderna e corrigida: sem o safe_mode
-        return mark_safe(markdown(self.message))
-    
-
+    def get_texto_as_markdown(self):
+        return mark_safe(markdown(self.texto))
