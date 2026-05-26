@@ -10,34 +10,46 @@
 {% block content %}
   <div class="row justify-content-center">
     <div class="col-md-10 col-lg-8">
-      <div class="card shadow-sm">
-        <div class="card-body">
-          <h2 class="card-title border-bottom pb-3 mb-4">Sobre o Projeto</h2>
+      <div class="card shadow-sm border-0">
+        <div class="card-body p-5">
+          <h2 class="card-title fw-bold text-primary mb-4">Sobre o Fórum USP</h2>
           
-          <p class="lead">
-            Bem-vindo a página sobre do site
+          <p class="lead text-secondary">
+            Promovendo transparência e diálogo construtivo no ambiente acadêmico da Universidade de São Paulo.
           </p>
 
-          <h4 class="mt-4">O que é este site?</h4>
+          <h4 class="mt-4 fw-bold">Nossa Missão</h4>
           <p>
-            vamos com calma
+            O Fórum USP nasceu com o objetivo de centralizar e organizar as experiências dos alunos sobre o corpo docente. 
+            Acreditamos que feedbacks estruturados e respeitosos são fundamentais para melhorar a comunicação entre alunos 
+            e professores, ajudando novos estudantes a tomarem decisões mais informadas sobre sua trajetória acadêmica.
+          </p>
 
-          <div class="alert alert-info mt-4">
-            <strong>Curiosidade:</strong> Este site está a ser construído com o <strong>Gemini e tutorias de 2017</strong> 
-          </div>
+          <h4 class="mt-4 fw-bold">Como este projeto foi construído</h4>
+          <p>
+            Este sistema é um projeto de desenvolvimento de software em constante evolução. Ele combina conceitos fundamentais 
+            de desenvolvimento web com ferramentas modernas de Inteligência Artificial. A arquitetura foi desenhada para ser 
+            robusta, segura e centrada no usuário, utilizando Django como motor principal.
+          </p>
 
-          <h4 class="mt-4">Funcionalidades Atuais:</h4>
-          <ul>
-            <li>varias ta</li>
-            <li>uma de cada vez</li>
-            <li>Deus no topo</li>
+          <h4 class="mt-4 fw-bold">Principais Funcionalidades</h4>
+          <ul class="list-group list-group-flush mb-4">
+            <li class="list-group-item ps-0"><strong>Avaliação Multidimensional:</strong> Notas detalhadas sobre didática, empenho, relação e dificuldade.</li>
+            <li class="list-group-item ps-0"><strong>Sistema de Comentários:</strong> Espaço para discussão e detalhamento das experiências.</li>
+            <li class="list-group-item ps-0"><strong>Filtros Inteligentes:</strong> Busca rápida por professores e áreas de conhecimento.</li>
+            <li class="list-group-item ps-0"><strong>Segurança e Moderação:</strong> Garantimos que apenas alunos autenticados possam participar.</li>
           </ul>
 
-          <hr>
-          <div class="text-center">
-            <a href="{% url 'home' %}" class="btn btn-outline-primary">Voltar para a Home</a>
+          <div class="bg-light p-3 rounded text-muted small">
+            <em>Nota: Este é um projeto acadêmico de cunho experimental. Respeitamos a privacidade e a ética acadêmica em todas as interações.</em>
+          </div>
+
+          <hr class="my-4">
+          
+          <div class="d-flex justify-content-center gap-3">
+            <a href="{% url 'home' %}" class="btn btn-outline-primary px-4">Voltar para a Home</a>
             {% if not user.is_authenticated %}
-              <a href="{% url 'signup' %}" class="btn btn-success">Cadastre-se agora</a>
+              <a href="{% url 'signup' %}" class="btn btn-success px-4">Cadastre-se agora</a>
             {% endif %}
           </div>
         </div>
