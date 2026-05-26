@@ -13,7 +13,7 @@ from django.views.generic import ListView
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger 
 from django.db.models import F
 from django.views.decorators.cache import never_cache
-
+from django.contrib import messages
 
 
 class ProfessorListView(ListView):
@@ -88,19 +88,16 @@ class ComentarioListView(ListView):
         queryset = self.avaliacao.comentarios.order_by('created_at')
         return queryset
 
+
 @login_required
 @never_cache
 def new_avaliacao(request, pk):
     professor = get_object_or_404(Professor, pk=pk)
     
-    # --- O SEGURANÇA DA PORTA (BACKEND) ---
-    # Verifica na base de dados se este aluno já avaliou este professor
+    # Verifica se já avaliou
     ja_avaliou = Avaliacao.objects.filter(professor=professor, starter=request.user).exists()
-    
     if ja_avaliou:
-        # Se for um espertinho a tentar forçar o URL, é redirecionado imediatamente!
         return redirect('professor_avaliacoes', pk=professor.pk)
-    # ---------------------------------------
 
     if request.method == 'POST':
         form = NewAvaliacaoForm(request.POST)
@@ -115,14 +112,20 @@ def new_avaliacao(request, pk):
                 avaliacao=avaliacao,
                 created_by=request.user
             )
+            
+            messages.success(request, 'Sua avaliação foi publicada com sucesso!')
             return redirect('avaliacao_comentarios', pk=professor.pk, avaliacao_pk=avaliacao.pk)
     else:
         form = NewAvaliacaoForm()
+        
     return render(request, 'new_avaliacao.html', {'professor': professor, 'form': form})
 
+     
+    
 @login_required
 def reply_avaliacao(request, pk, avaliacao_pk):
     avaliacao = get_object_or_404(Avaliacao, professor__pk=pk, pk=avaliacao_pk)
+    
     if request.method == 'POST':
         form = ComentarioForm(request.POST)
         if form.is_valid():
@@ -134,28 +137,35 @@ def reply_avaliacao(request, pk, avaliacao_pk):
             avaliacao.last_updated = timezone.now()
             avaliacao.save()
 
-            # --- A NOVA MÁGICA ENTRA AQUI ---
-            # 1. Gera a string da URL base
+            messages.success(request, 'Sua resposta foi enviada!')
+            
             avaliacao_url = reverse('avaliacao_comentarios', kwargs={'pk': pk, 'avaliacao_pk': avaliacao_pk})
-            
-            # 2. Monta a URL completa com a página final e a âncora do comentario (usando f-string)
             avaliacao_comentario_url = f"{avaliacao_url}?page={avaliacao.get_page_count()}#{comentario.pk}"
-            
-            # 3. Redireciona o utilizador
             return redirect(avaliacao_comentario_url)
     else:
         form = ComentarioForm()
     return render(request, 'reply_avaliacao.html', {'avaliacao': avaliacao, 'form': form})
+
 #GCBV
 
 
-@method_decorator(login_required, name='dispatch')
+
 @method_decorator(login_required, name='dispatch')
 class ComentarioUpdateView(UpdateView):
     model = Comentario
     template_name = 'edit_comentario.html'
     pk_url_kwarg = 'comentario_pk'
     context_object_name = 'comentario'
+    def form_valid(self, form):
+        comentario = form.save(commit=False)
+        comentario.updated_by = self.request.user
+        comentario.updated_at = timezone.now()
+        comentario.save()
+        
+        # Adicione esta linha:
+        messages.success(self.request, 'Alterações salvas com sucesso!')
+        
+        return redirect('avaliacao_comentarios', pk=comentario.avaliacao.professor.pk, avaliacao_pk=comentario.avaliacao.pk)
 
     def get_queryset(self):
         """
