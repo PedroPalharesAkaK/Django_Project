@@ -41,11 +41,22 @@ class AvaliacaoListView(ListView):
         queryset = self.professor.avaliacoes.order_by('-last_updated').annotate(replies=Count('comentarios') - 1)
         return queryset
 
+    # ---> SUBSTITUA TODA ESTA FUNÇÃO <---
     def get_context_data(self, **kwargs):
+        # 1. LÓGICA DO CONTADOR DE VISUALIZAÇÕES
+        session_key = f'viewed_professor_{self.professor.pk}'
+        
+        # Se o utilizador ainda não visitou este professor nesta sessão, soma +1
+        if not self.request.session.get(session_key, False):
+            self.professor.visualizacoes += 1
+            self.professor.save()
+            # Marca que já visitou para não somar de novo ao recarregar a página
+            self.request.session[session_key] = True
+
+        # 2. CÓDIGO ORIGINAL QUE VOCÊ JÁ TINHA
         kwargs['professor'] = self.professor
         
-        # --- A NOSSA NOVA MÁGICA DE INVESTIGAÇÃO ---
-        # Se o utilizador estiver logado, verifica se já existe uma avaliação dele para este professor
+        # Se o utilizador estiver logado, verifica se já existe uma avaliação dele
         if self.request.user.is_authenticated:
             kwargs['usuario_ja_avaliou'] = Avaliacao.objects.filter(
                 professor=self.professor, 

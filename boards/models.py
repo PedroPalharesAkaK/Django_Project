@@ -26,6 +26,7 @@ class Professor(models.Model):
     # foto_url guarda o link da foto temporariamente para não termos de configurar o upload de imagens agora
     foto_url = models.URLField(max_length=500, blank=True, null=True)
     universidade = models.ForeignKey(Universidade, on_delete=models.SET_NULL, null=True, blank=True, related_name='professores')
+    visualizacoes = models.PositiveIntegerField(default=0)
     
 
     def __str__(self):
