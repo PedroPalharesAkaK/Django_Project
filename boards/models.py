@@ -9,6 +9,13 @@ from django.db.models import Avg
 # IMPORTANTE: Importamos os validadores para garantir que a nota não passa de 5 nem desce de 0
 from django.core.validators import MinValueValidator, MaxValueValidator
 
+class Universidade(models.Model):
+    nome = models.CharField(max_length=150, unique=True)
+    sigla = models.CharField(max_length=15, unique=True) # Ex: USP, UNICAMP
+
+    def __str__(self):
+        return self.sigla
+
 class Professor(models.Model):
     nome = models.CharField(max_length=30, unique=True)
     descricao = models.CharField(max_length=100)
@@ -18,6 +25,8 @@ class Professor(models.Model):
     biografia = models.TextField(max_length=2000, blank=True, null=True) 
     # foto_url guarda o link da foto temporariamente para não termos de configurar o upload de imagens agora
     foto_url = models.URLField(max_length=500, blank=True, null=True)
+    universidade = models.ForeignKey(Universidade, on_delete=models.SET_NULL, null=True, blank=True, related_name='professores')
+    
 
     def __str__(self):
         return self.nome
