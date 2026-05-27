@@ -30,8 +30,8 @@
         <tr>
           <th>Professor / Instituto</th>
           <th class="text-center">Nota Geral</th>
-          <th class="text-center">Comentários</th>
           <th class="text-center">Avaliações</th>
+          <th class="text-center">Visualizações</th>
           <th>Última Atividade</th>
         </tr>
       </thead>
@@ -54,11 +54,13 @@
             </td>
 
             <td class="align-middle text-center">
-              {{ professor.get_comentarios_count }}
-            </td>
-            <td class="align-middle text-center">
               {{ professor.get_avaliacoes_count }}
             </td>
+            
+            <td class="align-middle text-center">
+              {{ professor.visualizacoes }}
+            </td>
+            
             <td class="align-middle">
               {% with comentario=professor.get_last_comentario %}
                 {% if comentario %}
@@ -78,8 +80,9 @@
           </tr>
         {% empty %}
           <tr>
-            <td colspan="5" class="text-center text-muted py-4">
-              Nenhum professor encontrado com esse nome.
+            <td colspan="5" class="text-center text-muted py-5">
+              <p class="mb-1">Nenhum professor encontrado com esse nome.</p>
+              <small>Faltou alguém? <a href="{% url 'contato' %}" class="text-decoration-none">Entre em contato</a> para adicionarmos à lista!</small>
             </td>
           </tr>
         {% endfor %}
