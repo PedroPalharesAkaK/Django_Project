@@ -34,3 +34,9 @@ class UserUpdateView(UpdateView):
     def get_object(self):
         # Retorna sempre o usuário logado atualmente
         return self.request.user
+    
+@login_required
+def meu_perfil(request):
+    # O Django já manda o request.user automaticamente para o template, 
+    # então só precisamos renderizar a página.
+    return render(request, 'meu_perfil.html')

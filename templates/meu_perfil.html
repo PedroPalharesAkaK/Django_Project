@@ -1,0 +1,49 @@
+{% extends 'base.html' %}
+
+{% block title %}Meu Perfil | Fórum USP{% endblock %}
+
+{% block breadcrumb %}
+  <li class="breadcrumb-item"><a href="{% url 'home' %}">Home</a></li>
+  <li class="breadcrumb-item active">Meu Perfil</li>
+{% endblock %}
+
+{% block content %}
+  <div class="row justify-content-center">
+    <div class="col-md-8">
+      <div class="card shadow-sm">
+        <div class="card-body">
+          <h2 class="card-title mb-4">Perfil do Aluno</h2>
+          
+          <table class="table table-borderless">
+            <tbody>
+              <tr>
+                <th scope="row" class="w-25">Usuário:</th>
+                <td>{{ user.username }}</td>
+              </tr>
+              <tr>
+                <th scope="row">E-mail:</th>
+                <td>{{ user.email }}</td>
+              </tr>
+              <tr>
+                <th scope="row">Instituto:</th>
+                <td>{{ user.perfil.instituto|default:"Não informado" }}</td>
+              </tr>
+              <tr>
+                <th scope="row">Curso:</th>
+                <td>{{ user.perfil.curso|default:"Não informado" }}</td>
+              </tr>
+              <tr>
+                <th scope="row">Ingresso:</th>
+                <td>{{ user.perfil.semestre_ingresso|default:"Não informado" }}</td>
+              </tr>
+            </tbody>
+          </table>
+          
+          <div class="mt-4">
+            <a href="#" class="btn btn-primary">Editar Perfil</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+{% endblock %}

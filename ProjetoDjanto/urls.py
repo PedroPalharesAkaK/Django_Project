@@ -20,6 +20,8 @@ from boards import views
 from accounts import views as accounts_views
 from django.contrib.auth import views as auth_views
 
+
+
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('', views.ProfessorListView.as_view(), name='home'),
@@ -52,4 +54,5 @@ urlpatterns = [
          name='edit_comentario'),
 
     path('settings/account/', accounts_views.UserUpdateView.as_view(), name='my_account'),
+    path('perfil/', accounts_views.meu_perfil, name='meu_perfil'),
 ]
