@@ -49,3 +49,20 @@ class ComentarioForm(forms.ModelForm):
         widgets = {
             'texto': forms.Textarea(attrs={'rows': 5, 'placeholder': 'Escreva a sua resposta aqui...'})
         }
+
+
+
+from .models import Contato
+
+class ContatoForm(forms.ModelForm):
+    class Meta:
+        model = Contato
+        fields = ['nome', 'sobrenome', 'email', 'mensagem']
+        
+        # Isto aplica a classe 'form-control' do Bootstrap nas caixas de texto
+        widgets = {
+            'nome': forms.TextInput(attrs={'class': 'form-control'}),
+            'sobrenome': forms.TextInput(attrs={'class': 'form-control'}),
+            'email': forms.EmailInput(attrs={'class': 'form-control'}),
+            'mensagem': forms.Textarea(attrs={'class': 'form-control', 'rows': 5}),
+        }

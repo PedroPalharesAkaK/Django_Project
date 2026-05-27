@@ -233,3 +233,20 @@ class ComentarioUpdateView(UpdateView):
 # Adicione esta função para evitar erros com a rota 'about' do seu urls.py
 def about(request):
     return render(request, 'about.html')
+
+
+from django.shortcuts import render, redirect
+from django.contrib import messages
+from .forms import ContatoForm
+
+def contato(request):
+    if request.method == 'POST':
+        form = ContatoForm(request.POST)
+        if form.is_valid():
+            form.save() # Salva a mensagem no banco de dados!
+            messages.success(request, 'Sua mensagem foi enviada com sucesso. Obrigado pelo contato!')
+            return redirect('home')
+    else:
+        form = ContatoForm()
+        
+    return render(request, 'contato.html', {'form': form})

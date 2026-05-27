@@ -120,3 +120,14 @@ class Comentario(models.Model):
 
     def get_texto_as_markdown(self):
         return mark_safe(markdown(self.texto))
+    
+
+class Contato(models.Model):
+    nome = models.CharField(max_length=100)
+    sobrenome = models.CharField(max_length=100)
+    email = models.EmailField()
+    mensagem = models.TextField(max_length=2000)
+    criado_em = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"Mensagem de {self.nome} - {self.email}"

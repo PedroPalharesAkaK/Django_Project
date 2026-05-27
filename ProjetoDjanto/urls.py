@@ -56,5 +56,6 @@ urlpatterns = [
     path('settings/account/', accounts_views.UserUpdateView.as_view(), name='my_account'),
     path('perfil/', accounts_views.meu_perfil, name='meu_perfil'),
     path('perfil/editar/', accounts_views.editar_perfil, name='editar_perfil'),
+    path('contato/', views.contato, name='contato'),
     
 ]

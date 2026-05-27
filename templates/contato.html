@@ -1,0 +1,45 @@
+{% extends 'base.html' %}
+
+{% block title %}Contato | Fórum de Avaliações{% endblock %}
+
+{% block breadcrumb %}
+  <li class="breadcrumb-item"><a href="{% url 'home' %}">Home</a></li>
+  <li class="breadcrumb-item active">Contato</li>
+{% endblock %}
+
+{% block content %}
+  <div class="row justify-content-center">
+    <div class="col-md-8 mb-5">
+      
+      <h2 class="mb-3">Contato</h2>
+      <p>Tem sugestões ou encontrou algum problema? Entre em contato conosco!</p>
+      <p class="mb-4">Gratidão.</p>
+
+      <form method="POST" novalidate>
+        {% csrf_token %}
+
+        {% for field in form %}
+          <div class="mb-3">
+            <label for="{{ field.id_for_label }}" class="form-label fw-bold">
+              {{ field.label }} {% if field.field.required %}*{% endif %}
+            </label>
+            
+            {{ field }}
+            
+            {% if field.errors %}
+              <div class="text-danger small mt-1">
+                {% for error in field.errors %}{{ error }}{% endfor %}
+              </div>
+            {% endif %}
+          </div>
+        {% endfor %}
+
+        <div class="mt-4">
+          <button type="submit" class="btn btn-primary px-4">Enviar</button>
+          <a href="{% url 'home' %}" class="btn btn-link text-decoration-none ms-2">Cancelar</a>
+        </div>
+      </form>
+      
+    </div>
+  </div>
+{% endblock %}
