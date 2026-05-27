@@ -15,9 +15,18 @@
   </div>
 
   <div class="row mb-4">
-    <div class="col-md-6"> <form method="GET" action="{% url 'home' %}">
+    <div class="col-md-8">
+      <form method="GET" action="{% url 'home' %}">
         <div class="input-group shadow-sm">
           <input type="text" name="q" class="form-control" placeholder="Pesquisar professor..." value="{{ request.GET.q }}">
+          
+          <select name="sort" class="form-select" style="max-width: 220px;">
+            <option value="">Ordem alfabetica</option>
+            <option value="nota" {% if request.GET.sort == 'nota' %}selected{% endif %}>Maior Nota Geral</option>
+            <option value="visualizacoes" {% if request.GET.sort == 'visualizacoes' %}selected{% endif %}>Mais Visualizações</option>
+            <option value="avaliacoes" {% if request.GET.sort == 'avaliacoes' %}selected{% endif %}>Mais Avaliações</option>
+          </select>
+
           <button type="submit" class="btn btn-primary px-4">Buscar</button>
         </div>
       </form>
@@ -95,7 +104,7 @@
       <ul class="pagination justify-content-center">
         {% if page_obj.has_previous %}
           <li class="page-item">
-            <a class="page-link" href="?page={{ page_obj.previous_page_number }}{% if request.GET.q %}&q={{ request.GET.q }}{% endif %}">Anterior</a>
+            <a class="page-link" href="?page={{ page_obj.previous_page_number }}{% if request.GET.q %}&q={{ request.GET.q }}{% endif %}{% if request.GET.sort %}&sort={{ request.GET.sort }}{% endif %}">Anterior</a>
           </li>
         {% else %}
           <li class="page-item disabled"><span class="page-link">Anterior</span></li>
@@ -106,14 +115,14 @@
             <li class="page-item active"><span class="page-link">{{ page_num }}</span></li>
           {% else %}
             <li class="page-item">
-              <a class="page-link" href="?page={{ page_num }}{% if request.GET.q %}&q={{ request.GET.q }}{% endif %}">{{ page_num }}</a>
+              <a class="page-link" href="?page={{ page_num }}{% if request.GET.q %}&q={{ request.GET.q }}{% endif %}{% if request.GET.sort %}&sort={{ request.GET.sort }}{% endif %}">{{ page_num }}</a>
             </li>
           {% endif %}
         {% endfor %}
 
         {% if page_obj.has_next %}
           <li class="page-item">
-            <a class="page-link" href="?page={{ page_obj.next_page_number }}{% if request.GET.q %}&q={{ request.GET.q }}{% endif %}">Próxima</a>
+            <a class="page-link" href="?page={{ page_obj.next_page_number }}{% if request.GET.q %}&q={{ request.GET.q }}{% endif %}{% if request.GET.sort %}&sort={{ request.GET.sort }}{% endif %}">Próxima</a>
           </li>
         {% else %}
           <li class="page-item disabled"><span class="page-link">Próxima</span></li>

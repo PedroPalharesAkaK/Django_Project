@@ -8,7 +8,7 @@ from django.db import transaction # Adicione este import
 from django.utils import timezone
 from django.utils.decorators import method_decorator
 from django.views.generic import UpdateView
-from django.db.models import Count
+from django.db.models import Count, Avg
 from django.views.generic import ListView
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger 
 from django.db.models import F
@@ -24,10 +24,31 @@ class ProfessorListView(ListView):
 
     def get_queryset(self):
         queryset = super().get_queryset()
-        query = self.request.GET.get('q') # Captura o que o utilizador digitou
+        
+        # 1. Filtro de Pesquisa por Texto
+        query = self.request.GET.get('q')
         if query:
-            # Filtra pelo nome, ignorando maiúsculas/minúsculas (icontains)
             queryset = queryset.filter(nome__icontains=query)
+            
+        # 2. Filtro de Ordenação (O nosso novo menu!)
+        sort = self.request.GET.get('sort')
+        
+        if sort == 'visualizacoes':
+            # Ordena pelos professores mais vistos
+            queryset = queryset.order_by('-visualizacoes')
+            
+        elif sort == 'avaliacoes':
+            # Conta quantas avaliações cada professor tem e ordena do maior para o menor
+            queryset = queryset.annotate(total_avaliacoes=Count('avaliacoes')).order_by('-total_avaliacoes')
+            
+        elif sort == 'nota':
+            # Calcula a média da 'nota_geral' direto no Banco de Dados para conseguir ordenar
+            queryset = queryset.annotate(media_db=Avg('avaliacoes__nota_geral')).order_by('-media_db')
+            
+        else:
+            # Padrão: Ordenação alfabética pelo nome se nada for selecionado
+            queryset = queryset.order_by('nome')
+
         return queryset
 
 class AvaliacaoListView(ListView):
