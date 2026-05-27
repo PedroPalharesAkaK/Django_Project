@@ -44,6 +44,11 @@
             </tbody>
           </table>
           
+          <div class="mt-4 mb-4">
+            <h5 class="text-muted border-bottom pb-2">Sobre mim</h5>
+            <p>{{ user.perfil.bio|default:"Nenhuma biografia informada ainda."|linebreaksbr }}</p>
+          </div>
+          
           <div class="mt-4">
             <a href="{% url 'editar_perfil' %}" class="btn btn-primary">Editar Perfil</a>
           </div>
