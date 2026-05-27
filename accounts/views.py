@@ -40,3 +40,36 @@ def meu_perfil(request):
     # O Django já manda o request.user automaticamente para o template, 
     # então só precisamos renderizar a página.
     return render(request, 'meu_perfil.html')
+
+# accounts/views.py
+
+
+from django.contrib import messages
+from .forms import UserUpdateForm, PerfilUpdateForm
+
+@login_required
+def editar_perfil(request):
+    if request.method == 'POST':
+        # Instancia os formulários com os dados enviados (POST) e diz de quem são (instance)
+        u_form = UserUpdateForm(request.POST, instance=request.user)
+        p_form = PerfilUpdateForm(request.POST, instance=request.user.perfil)
+        
+        # Se os dois formulários forem válidos, salva no banco de dados
+        if u_form.is_valid() and p_form.is_valid():
+            u_form.save()
+            p_form.save()
+            messages.success(request, 'O seu perfil foi atualizado com sucesso!')
+            return redirect('meu_perfil') # Redireciona de volta para ver como ficou
+            
+    else:
+        # Se for um GET (apenas abrir a página), carrega os formulários preenchidos com os dados atuais
+        u_form = UserUpdateForm(instance=request.user)
+        p_form = PerfilUpdateForm(instance=request.user.perfil)
+
+    # Envia os dois formulários para o template
+    context = {
+        'u_form': u_form,
+        'p_form': p_form
+    }
+    
+    return render(request, 'editar_perfil.html', context)

@@ -25,6 +25,11 @@
                 <td>{{ user.email }}</td>
               </tr>
               <tr>
+                <th scope="row">E-mail Institucional:</th>
+                <td>{{ user.perfil.email_institucional|default:"Não informado" }}</td>
+              </tr>
+              
+              <tr>
                 <th scope="row">Instituto:</th>
                 <td>{{ user.perfil.instituto|default:"Não informado" }}</td>
               </tr>
@@ -40,7 +45,7 @@
           </table>
           
           <div class="mt-4">
-            <a href="#" class="btn btn-primary">Editar Perfil</a>
+            <a href="{% url 'editar_perfil' %}" class="btn btn-primary">Editar Perfil</a>
           </div>
         </div>
       </div>
