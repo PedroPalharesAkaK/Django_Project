@@ -5,93 +5,117 @@
 {% endblock %}
 
 {% block content %}
+  <div class="p-4 mb-4 bg-light rounded-3 border shadow-sm">
+    <div class="container-fluid py-2">
+      <h1 class="display-6 fw-bold">Bem-vindo ao Fórum de Avaliações</h1>
+      <p class="col-md-10 fs-5 text-muted">
+        Explore avaliações detalhadas, descubra a didática dos docentes e planeje o seu próximo semestre com a ajuda da nossa comunidade.
+      </p>
+    </div>
+  </div>
+
   <div class="row mb-4">
-    <div class="col-md-4">
-      <form method="GET" action="{% url 'home' %}">
-        <div class="input-group">
+    <div class="col-md-6"> <form method="GET" action="{% url 'home' %}">
+        <div class="input-group shadow-sm">
           <input type="text" name="q" class="form-control" placeholder="Pesquisar professor..." value="{{ request.GET.q }}">
-          <button type="submit" class="btn btn-outline-primary">Buscar</button>
+          <button type="submit" class="btn btn-primary px-4">Buscar</button>
         </div>
       </form>
     </div>
   </div>
 
-  <table class="table table-striped border">
-    <thead class="table-dark">
-      <tr>
-        <th>Professor / Instituto</th>
-        <th>Comentários</th>
-        <th>Avaliações</th>
-        <th>Última Atividade</th>
-      </tr>
-    </thead>
-    <tbody>
-      {% for professor in professors %}
+  <div class="table-responsive shadow-sm rounded bg-white">
+    <table class="table table-striped table-hover border mb-0">
+      <thead class="table-dark">
         <tr>
-          <td>
-            <a href="{% url 'professor_avaliacoes' professor.pk %}">{{ professor.nome }}</a>
-            <small class="text-muted d-block">{{ professor.descricao }}</small>
-          </td>
-          <td class="align-middle">
-            {{ professor.get_comentarios_count }}
-          </td>
-          <td class="align-middle">
-            {{ professor.get_avaliacoes_count }}
-          </td>
-          <td class="align-middle">
-            {% with comentario=professor.get_last_comentario %}
-              {% if comentario %}
-                <small>
-                  <a href="{% url 'avaliacao_comentarios' professor.pk comentario.avaliacao.pk %}">
-                    Por {{ comentario.created_by.username }} em {{ comentario.created_at|date:"d/m/Y H:i" }}
-                  </a>
-                </small>
+          <th>Professor / Instituto</th>
+          <th class="text-center">Nota Geral</th>
+          <th class="text-center">Comentários</th>
+          <th class="text-center">Avaliações</th>
+          <th>Última Atividade</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for professor in professors %}
+          <tr>
+            <td>
+              <a href="{% url 'professor_avaliacoes' professor.pk %}" class="fw-bold text-decoration-none">{{ professor.nome }}</a>
+              <small class="text-muted d-block">{{ professor.descricao }}</small>
+            </td>
+            
+            <td class="align-middle text-center">
+              {% if professor.get_media_geral > 0 %}
+                <span class="badge bg-success fs-6">
+                  ⭐ {{ professor.get_media_geral }} / 5.0
+                </span>
               {% else %}
-                <small class="text-muted">
-                  <em>Sem avaliações ainda.</em>
-                </small>
+                <span class="badge bg-secondary">S/ Nota</span>
               {% endif %}
-            {% endwith %}
-          </td>
-        </tr>
-      {% empty %}
-        <tr>
-          <td colspan="4" class="text-center text-muted py-4">
-            Nenhum professor encontrado com esse nome.
-          </td>
-        </tr>
-      {% endfor %}
-    </tbody>
-  </table>
+            </td>
+
+            <td class="align-middle text-center">
+              {{ professor.get_comentarios_count }}
+            </td>
+            <td class="align-middle text-center">
+              {{ professor.get_avaliacoes_count }}
+            </td>
+            <td class="align-middle">
+              {% with comentario=professor.get_last_comentario %}
+                {% if comentario %}
+                  <small>
+                    <a href="{% url 'avaliacao_comentarios' professor.pk comentario.avaliacao.pk %}" class="text-decoration-none">
+                      Por {{ comentario.created_by.username }}<br>
+                      em {{ comentario.created_at|date:"d/m/Y H:i" }}
+                    </a>
+                  </small>
+                {% else %}
+                  <small class="text-muted">
+                    <em>Sem avaliações ainda.</em>
+                  </small>
+                {% endif %}
+              {% endwith %}
+            </td>
+          </tr>
+        {% empty %}
+          <tr>
+            <td colspan="5" class="text-center text-muted py-4">
+              Nenhum professor encontrado com esse nome.
+            </td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+
   {% if is_paginated %}
-  <nav aria-label="Navegação de páginas">
-    <ul class="pagination justify-content-center">
-      {% if page_obj.has_previous %}
-        <li class="page-item">
-          <a class="page-link" href="?page={{ page_obj.previous_page_number }}{% if request.GET.q %}&q={{ request.GET.q }}{% endif %}">Anterior</a>
-        </li>
-      {% else %}
-        <li class="page-item disabled"><span class="page-link">Anterior</span></li>
-      {% endif %}
-
-      {% for page_num in paginator.page_range %}
-        {% if page_obj.number == page_num %}
-          <li class="page-item active"><span class="page-link">{{ page_num }}</span></li>
-        {% else %}
+    <nav aria-label="Navegação de páginas" class="mt-4">
+      <ul class="pagination justify-content-center">
+        {% if page_obj.has_previous %}
           <li class="page-item">
-            <a class="page-link" href="?page={{ page_num }}{% if request.GET.q %}&q={{ request.GET.q }}{% endif %}">{{ page_num }}</a>
+            <a class="page-link" href="?page={{ page_obj.previous_page_number }}{% if request.GET.q %}&q={{ request.GET.q }}{% endif %}">Anterior</a>
           </li>
+        {% else %}
+          <li class="page-item disabled"><span class="page-link">Anterior</span></li>
         {% endif %}
-      {% endfor %}
 
-      {% if page_obj.has_next %}
-        <li class="page-item">
-          <a class="page-link" href="?page={{ page_obj.next_page_number }}{% if request.GET.q %}&q={{ request.GET.q }}{% endif %}">Próxima</a>
-        </li>
-      {% else %}
-        <li class="page-item disabled"><span class="page-link">Próxima</span></li>
-      {% endif %}
-    </ul>
-  </nav>
-{% endif %}
+        {% for page_num in paginator.page_range %}
+          {% if page_obj.number == page_num %}
+            <li class="page-item active"><span class="page-link">{{ page_num }}</span></li>
+          {% else %}
+            <li class="page-item">
+              <a class="page-link" href="?page={{ page_num }}{% if request.GET.q %}&q={{ request.GET.q }}{% endif %}">{{ page_num }}</a>
+            </li>
+          {% endif %}
+        {% endfor %}
+
+        {% if page_obj.has_next %}
+          <li class="page-item">
+            <a class="page-link" href="?page={{ page_obj.next_page_number }}{% if request.GET.q %}&q={{ request.GET.q }}{% endif %}">Próxima</a>
+          </li>
+        {% else %}
+          <li class="page-item disabled"><span class="page-link">Próxima</span></li>
+        {% endif %}
+      </ul>
+    </nav>
+  {% endif %}
 {% endblock %}
