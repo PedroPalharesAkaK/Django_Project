@@ -20,7 +20,7 @@ class ProfessorListView(ListView):
     model = Professor
     context_object_name = 'professors' 
     template_name = 'home.html'
-    paginate_by = 7
+    paginate_by = 20
 
     def get_queryset(self):
         queryset = super().get_queryset()
