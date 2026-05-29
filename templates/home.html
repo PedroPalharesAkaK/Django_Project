@@ -53,10 +53,12 @@
             </td>
             
             <td class="align-middle text-center">
-              {% if professor.get_media_geral > 0 %}
-                <span class="badge bg-success fs-6">
+              {% if professor.get_avaliacoes_count > 0 %}
+                
+                <span class="badge {% if professor.get_media_geral >= 3 %}bg-success{% elif professor.get_media_geral >= 1 %}bg-warning text-dark{% else %}bg-danger{% endif %} fs-6">
                   ⭐ {{ professor.get_media_geral }} / 5.0
                 </span>
+                
               {% else %}
                 <span class="badge bg-secondary">S/ Nota</span>
               {% endif %}
