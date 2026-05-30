@@ -29,9 +29,23 @@
               <li class="nav-item dropdown">
                 <a class="nav-link dropdown-toggle" href="#" id="userMenu" role="button" data-bs-toggle="dropdown" aria-expanded="false">
                   {{ user.username }}
+                  
+                  {% if not user.perfil.curso or not user.perfil.instituto %}
+                    <span class="badge bg-danger border border-light rounded-circle p-1 ms-1" title="Perfil incompleto">
+                      <span class="visually-hidden">Perfil incompleto</span>
+                    </span>
+                  {% endif %}
+                  
                 </a>
                 <div class="dropdown-menu dropdown-menu-end" aria-labelledby="userMenu">
-                  <a class="dropdown-item" href="{% url 'meu_perfil' %}">Meu Perfil</a>
+                  
+                  <a class="dropdown-item d-flex justify-content-between align-items-center" href="{% url 'meu_perfil' %}">
+                    Meu Perfil
+                    {% if not user.perfil.curso or not user.perfil.instituto %}
+                      <span class="badge bg-warning text-dark ms-3">Completar dados</span>
+                    {% endif %}
+                  </a>
+                  
                   <a class="dropdown-item" href="#">Configurações</a>
                   <div class="dropdown-divider"></div>
                   
