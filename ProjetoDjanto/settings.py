@@ -87,7 +87,7 @@ WSGI_APPLICATION = 'ProjetoDjanto.wsgi.application'
 
 DATABASES = {
     'default': dj_database_url.config(
-        default=config('DATABASE_URL')
+        default=config('DATABASE_URL', default='postgres://forum_user:senha_super_segura@db:5432/forum_db')
     ),
     'test': {
         'NAME': ':memory:',  # <-- Mantendo a sua otimização de RAM intacta!
