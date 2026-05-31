@@ -57,5 +57,6 @@ urlpatterns = [
     path('perfil/', accounts_views.meu_perfil, name='meu_perfil'),
     path('perfil/editar/', accounts_views.editar_perfil, name='editar_perfil'),
     path('contato/', views.contato, name='contato'),
+    path('quero-ajudar/', views.QueroAjudarView.as_view(), name='quero_ajudar'),
     
 ]

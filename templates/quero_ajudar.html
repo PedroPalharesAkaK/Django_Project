@@ -1,0 +1,51 @@
+{% extends 'base.html' %}
+
+{% block title %}Quero Ajudar - Fórum de Avaliações{% endblock %}
+
+{% block breadcrumb %}
+  <li class="breadcrumb-item"><a href="{% url 'home' %}">Home</a></li>
+  <li class="breadcrumb-item active">Quero Ajudar</li>
+{% endblock %}
+
+{% block content %}
+  <div class="p-4 mb-4 bg-light rounded-3 border shadow-sm">
+    <div class="container-fluid py-2">
+      <h1 class="display-6 fw-bold">Como você pode ajudar?</h1>
+      <p class="col-md-10 fs-5 text-muted">
+        O fórum é construído de alunos para alunos. Toda contribuição, por menor que seja, faz uma enorme diferença na qualidade da nossa plataforma.
+      </p>
+    </div>
+  </div>
+
+  <div class="row">
+    <div class="col-md-8">
+      
+      <div class="mb-5">
+        <h3 class="fw-bold">✏️ Escreva Avaliações Construtivas</h3>
+        <p>A melhor forma de apoiar o projeto é deixando avaliações ricas em detalhes. Fale sobre a metodologia, a dificuldade das provas e a didática. Lembre-se sempre de manter o respeito e a ética profissional. Um comentário bem escrito pode salvar o semestre de um colega!</p>
+      </div>
+
+      <div class="mb-5">
+        <h3 class="fw-bold"> Manter o Servidor</h3>
+        <p>O servidor e banco de dados do site esta sendo mantidos pelo subsídio do <strong>Github Student Developer Pack</strong> e quando meus créditos acabarem vou querer usar os seus, entre em contato!!</p>
+      </div>
+
+      <div class="mb-5">
+        <h3 class="fw-bold">Participe do Desenvolvimento (Open Source)</h3>
+        <p>Este site é um projeto de código aberto desenvolvido em Python e Django. Se você tem interesse em programação, web design ou banco de dados, sinta-se à vontade para visitar o nosso repositório no GitHub. <strong>Em Breve</strong></p>
+        <p>Você pode ajudar a:</p>
+        <ul>
+          <li>Reportar bugs ou erros visuais.</li>
+          <li>Sugerir novas funcionalidades.</li>
+          <li>Enviar "Pull Requests" com melhorias no código.</li>
+        </ul>
+      </div>
+
+      <div class="mb-5">
+        <h3 class="fw-bold">Gostei Muito do projeto e quero te dar dinheiro</h3>
+        <p>Você é muito gentil obrigado😳, mas não precisa. Não sério 🙈 hahah não precisa. Você pode ajudar doando ingresso de festas e enventos ao fazendo uma doação em: </p>
+      </div>
+
+    </div>
+  </div>
+{% endblock %}

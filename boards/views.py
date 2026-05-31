@@ -282,3 +282,8 @@ def contato(request):
         form = ContatoForm()
         
     return render(request, 'contato.html', {'form': form})
+
+from django.views.generic import TemplateView
+
+class QueroAjudarView(TemplateView):
+    template_name = 'quero_ajudar.html'
