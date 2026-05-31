@@ -1,5 +1,5 @@
 # Usa uma versão oficial e leve do Python
-FROM python:3.11-slim
+FROM python:3.12-slim
 
 # Impede o Python de gravar arquivos .pyc e força a saída no terminal sem atrasos
 ENV PYTHONDONTWRITEBYTECODE 1
