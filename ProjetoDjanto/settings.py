@@ -35,6 +35,11 @@ SECRET_KEY = config('SECRET_KEY')
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = config('DEBUG', default=False, cast=bool)
 ALLOWED_HOSTS = config('ALLOWED_HOSTS', cast=Csv())
+# Diz ao Django que formulários vindos destes domínios HTTPS são seguros
+CSRF_TRUSTED_ORIGINS = ['https://avaliaprofessor.app', 'https://www.avaliaprofessor.app']
+
+# Avisa o Django que ele está atrás de um proxy (Nginx) que já lidou com o SSL
+SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 
 # Application definition
 
