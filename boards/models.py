@@ -16,16 +16,24 @@ class Universidade(models.Model):
     def __str__(self):
         return self.sigla
 
+class Instituto(models.Model):
+    nome = models.CharField(max_length=150) # Ex: Instituto de Física
+    sigla = models.CharField(max_length=15) # Ex: IFUSP
+    
+    universidade = models.ForeignKey(Universidade, on_delete=models.CASCADE, related_name='institutos')
+
+    def __str__(self):
+        return self.sigla
+
 class Professor(models.Model):
     nome = models.CharField(max_length=30, unique=True)
     descricao = models.CharField(max_length=100)
     
-    # NOVOS CAMPOS PARA O PERFIL DO PROFESSOR
-    # biografia guarda o Lattes/Trajetória. Usamos TextField para textos longos.
     biografia = models.TextField(max_length=2000, blank=True, null=True) 
-    # foto_url guarda o link da foto temporariamente para não termos de configurar o upload de imagens agora
+    
     foto_url = models.URLField(max_length=500, blank=True, null=True)
     universidade = models.ForeignKey(Universidade, on_delete=models.SET_NULL, null=True, blank=True, related_name='professores')
+    instituto = models.ForeignKey(Instituto, on_delete=models.SET_NULL, null=True, blank=True, related_name='professores')
     visualizacoes = models.PositiveIntegerField(default=0)
     
 
