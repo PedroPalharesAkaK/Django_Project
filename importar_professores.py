@@ -1,57 +1,67 @@
-import os
-import django
+import os #[cite: 2]
+import django #[cite: 2]
 
-# 1. Conecta este script às configurações do seu projeto Django
-# Substitua 'ProjetoDjanto.settings' pelo nome exato da sua pasta principal, se for diferente
-os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'ProjetoDjanto.settings')
+# 1. Conecta este script às configurações do seu projeto Django[cite: 2]
+os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'ProjetoDjanto.settings') #[cite: 2]
+django.setup() #[cite: 2]
 
-# Inicia o motor do Django
-django.setup()
+# IMPORTANTE: Agora também importamos Instituto e Universidade[cite: 2]
+from boards.models import Professor, Instituto, Universidade
 
-# 2. Só podemos importar os models DEPOIS de rodar o django.setup()
-from boards.models import Professor
-
-def popular_banco_dados():
-    caminho_arquivo = 'Nome professores ifusp.txt'
+def popular_banco_dados(): #[cite: 2]
+    # Atualizado para o novo arquivo
+    caminho_arquivo = 'nome professores ime.txt' 
     
-    # Abre o arquivo garantindo a leitura correta de acentos (utf-8)
-    with open(caminho_arquivo, 'r', encoding='utf-8') as arquivo:
-        linhas = arquivo.readlines()
+    # 2. Preparamos as chaves estrangeiras ANTES do loop começar
+    usp, _ = Universidade.objects.get_or_create(
+        sigla="USP",
+        defaults={"nome": "Universidade de São Paulo"}
+    )
+    
+    ime, _ = Instituto.objects.get_or_create(
+        sigla="IME",
+        defaults={"nome": "Instituto de Matemática e Estatística", "universidade": usp}
+    )
 
-    cadastrados = 0
-    ignorados = 0
+    # Abre o arquivo garantindo a leitura correta de acentos (utf-8)[cite: 2]
+    with open(caminho_arquivo, 'r', encoding='utf-8') as arquivo: #[cite: 2]
+        linhas = arquivo.readlines() #[cite: 2]
 
-    print("Iniciando a importação de docentes...\n")
+    cadastrados = 0 #[cite: 2]
+    ignorados = 0 #[cite: 2]
 
-    for linha in linhas:
-        # Remove quebras de linha (\n) e espaços nas pontas
-        nome = linha.strip()
+    print("Iniciando a importação de docentes do IME...\n") 
 
-        # Verifica se a linha não está vazia e ignora marcações de sistema (se houver)
-        if len(nome) > 2 and not nome.startswith('['):
+    for linha in linhas: #[cite: 2]
+        # Remove quebras de linha (\n) e espaços nas pontas[cite: 2]
+        nome = linha.strip() #[cite: 2]
+
+        # Verifica se a linha não está vazia e ignora marcações de sistema (se houver)[cite: 2]
+        if len(nome) > 2 and not nome.startswith('['): #[cite: 2]
             
-            # O get_or_create é mágico: ele verifica se o nome já existe. 
-            # Se existir, ele ignora. Se não existir, ele cria. 
-            # Isso impede professores duplicados se você rodar o script duas vezes!
-            professor, foi_criado = Professor.objects.get_or_create(
-                nome=nome,
-                defaults={
-                    'descricao': 'Instituto de Física da USP (IFUSP)',
-                    'visualizacoes': 0
+            # O get_or_create é mágico: ele verifica se o nome já existe.[cite: 2]
+            # Injetamos a universidade e o instituto no bloco de defaults!
+            professor, foi_criado = Professor.objects.get_or_create( #[cite: 2]
+                nome=nome, #[cite: 2]
+                defaults={ #[cite: 2]
+                    'descricao': 'Instituto de Matemática e Estatística (IME)', 
+                    'visualizacoes': 0, #[cite: 2]
+                    'universidade': usp,
+                    'instituto': ime
                 }
             )
 
-            if foi_criado:
-                cadastrados += 1
-                print(f"✅ Cadastrado: {nome}")
-            else:
-                ignorados += 1
+            if foi_criado: #[cite: 2]
+                cadastrados += 1 #[cite: 2]
+                print(f"✅ Cadastrado: {nome}") #[cite: 2]
+            else: #[cite: 2]
+                ignorados += 1 #[cite: 2]
 
-    print("\n" + "="*40)
-    print("RELATÓRIO DE IMPORTAÇÃO")
-    print("="*40)
-    print(f"Novos professores inseridos: {cadastrados}")
-    print(f"Nomes já existentes ignorados: {ignorados}")
+    print("\n" + "="*40) #[cite: 2]
+    print("RELATÓRIO DE IMPORTAÇÃO") #[cite: 2]
+    print("="*40) #[cite: 2]
+    print(f"Novos professores inseridos: {cadastrados}") #[cite: 2]
+    print(f"Nomes já existentes ignorados: {ignorados}") #[cite: 2]
 
-if __name__ == '__main__':
-    popular_banco_dados()
+if __name__ == '__main__': #[cite: 2]
+    popular_banco_dados() #[cite: 2]
