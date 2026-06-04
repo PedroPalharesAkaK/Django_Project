@@ -10,7 +10,7 @@ from boards.models import Professor, Instituto, Universidade
 
 def popular_banco_dados(): #[cite: 2]
     # Atualizado para o novo arquivo
-    caminho_arquivo = 'nome professores ime.txt' 
+    caminho_arquivo = 'Nome professores ime.txt' 
     
     # 2. Preparamos as chaves estrangeiras ANTES do loop começar
     usp, _ = Universidade.objects.get_or_create(
