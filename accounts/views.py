@@ -1,20 +1,64 @@
 from django.contrib.auth import login as auth_login
-# Remova: from django.contrib.auth.forms import UserCreationForm
-from .forms import SignUpForm  # Importe o seu novo formulário
 from django.shortcuts import render, redirect
+from django.contrib.sites.shortcuts import get_current_site
+from django.template.loader import render_to_string
+from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
+from django.utils.encoding import force_bytes, force_str
+from django.core.mail import EmailMessage
+from django.contrib.auth.tokens import default_token_generator
+from django.contrib.auth.models import User
+from .forms import SignUpForm
 
 def signup(request):
     if request.method == 'POST':
-        form = SignUpForm(request.POST) # Use o SignUpForm aqui
+        form = SignUpForm(request.POST)
         if form.is_valid():
-            user = form.save()
-            auth_login(request, user)
-            return redirect('home')
+            # 1. Salva o usuário no banco, mas não o ativa ainda
+            user = form.save(commit=False)
+            user.is_active = False
+            user.save()
+
+            # 2. Prepara as informações do e-mail
+            current_site = get_current_site(request)
+            mail_subject = 'Ative a sua conta no Avalia Professor'
+            message = render_to_string('acc_active_email.html', {
+                'user': user,
+                'domain': current_site.domain,
+                'uid': urlsafe_base64_encode(force_bytes(user.pk)),
+                'token': default_token_generator.make_token(user),
+            })
+            
+            # 3. Dispara o e-mail via Gmail
+            to_email = form.cleaned_data.get('email')
+            email = EmailMessage(mail_subject, message, to=[to_email])
+            email.send()
+
+            # 4. Redireciona para uma tela de aviso
+            return render(request, 'email_confirmation_sent.html')
     else:
-        form = SignUpForm() # E aqui também
+        form = SignUpForm()
+    
     return render(request, 'signup.html', {'form': form})
 
-# accounts/views.py
+def activate(request, uidb64, token):
+    try:
+        # Tenta decodificar o ID do usuário que veio no link
+        uid = force_str(urlsafe_base64_decode(uidb64))
+        user = User.objects.get(pk=uid)
+    except(TypeError, ValueError, OverflowError, User.DoesNotExist):
+        user = None
+
+    # Se o usuário existir e o token de segurança for válido
+    if user is not None and default_token_generator.check_token(user, token):
+        user.is_active = True
+        user.save()
+        auth_login(request, user) # Faz o login automático após confirmar
+        return render(request, 'email_confirmed.html')
+    else:
+        # Se o link estiver expirado ou quebrado
+        return render(request, 'email_confirmation_invalid.html')
+
+# ... MANTENHA SUAS VIEWS DE PERFIL INTACTAS ABAIXO DESTA LINHA ...
 
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User

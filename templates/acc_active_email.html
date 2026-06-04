@@ -1,0 +1,8 @@
+Olá {{ user.username }},
+
+Obrigado por se registrar no Avalia Professor! 
+Por favor, clique no link abaixo para confirmar o seu endereço de e-mail e ativar a sua conta:
+
+http://{{ domain }}{% url 'activate' uidb64=uid token=token %}
+
+Se você não solicitou este cadastro, pode ignorar este e-mail.
