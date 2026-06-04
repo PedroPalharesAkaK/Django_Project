@@ -1,10 +1,9 @@
 from django.urls import reverse, resolve
 from django.test import TestCase
-from django.contrib.auth.forms import UserCreationForm
-from ..views import signup #.. é tipo cd .. ; voltar uma pasta
-from ..forms import SignUpForm
 from django.contrib.auth.models import User
-
+from django.core import mail # NOVO IMPORT: Ferramenta de testes de e-mail do Django
+from ..views import signup
+from ..forms import SignUpForm
 
 class SignUpTests(TestCase):
     def setUp(self):
@@ -23,12 +22,10 @@ class SignUpTests(TestCase):
 
     def test_contains_form(self):
         form = self.response.context.get('form')
-        self.assertIsInstance(form, UserCreationForm)
+        # Atualizado para garantir que estamos usando o seu form customizado
+        self.assertIsInstance(form, SignUpForm) 
+        
     def test_form_inputs(self):
-        '''
-        The view must contain five inputs: csrf, username, email,
-        password1, password2
-        '''
         self.assertContains(self.response, '<input', 5)
         self.assertContains(self.response, 'type="text"', 1)
         self.assertContains(self.response, 'type="email"', 1)
@@ -44,31 +41,37 @@ class SuccessfulSignUpTests(TestCase):
             'password2': 'abcdef123456'
         }
         self.response = self.client.post(url, self.data)
-        self.home_url = reverse('home')
 
-    def test_redirection(self):
-        # Verifica se o cadastro redireciona corretamente para a home
-        self.assertRedirects(self.response, self.home_url)
+    def test_redirection_and_template(self):
+        # Agora o status deve ser 200 (sucesso) e renderizar a tela de aviso de e-mail
+        self.assertEqual(self.response.status_code, 200)
+        self.assertTemplateUsed(self.response, 'email_confirmation_sent.html')
 
-    def test_user_creation(self):
-        # Verifica se o usuário foi realmente criado no banco de dados
+    def test_user_creation_is_inactive(self):
+        # Verifica se foi criado, mas exige que a conta esteja "congelada" (is_active=False)
         self.assertTrue(User.objects.filter(username='john').exists())
+        user = User.objects.get(username='john')
+        self.assertFalse(user.is_active)
 
-    def test_user_authentication(self):
-        # Verifica se o usuário recém-criado já está logado na sessão
-        # Usamos o client do próprio teste para checar o ID da sessão
+    def test_user_not_authenticated(self):
+        # O usuário NÃO deve estar logado no sistema ainda
         from django.contrib.auth import get_user
         user = get_user(self.client)
-        self.assertTrue(user.is_authenticated)
+        self.assertFalse(user.is_authenticated)
+
+    def test_email_sent(self):
+        # Verifica se o Django gerou e colocou exatamente 1 e-mail na caixa de saída
+        self.assertEqual(len(mail.outbox), 1)
+        # Verifica se o destinatário e o assunto estão corretos
+        self.assertEqual(mail.outbox[0].to, ['john@doe.com'])
+        self.assertEqual(mail.outbox[0].subject, 'Ative a sua conta no Avalia Professor')
 
 class InvalidSignUpTests(TestCase):
     def setUp(self):
         url = reverse('signup')
-        # Simulando o envio de um formulário vazio
         self.response = self.client.post(url, {})
 
     def test_signup_status_code(self):
-        # Deve recarregar a mesma página (200)
         self.assertEqual(self.response.status_code, 200)
 
     def test_form_errors(self):
@@ -76,5 +79,4 @@ class InvalidSignUpTests(TestCase):
         self.assertTrue(form.errors)
 
     def test_dont_create_user(self):
-        # Garante que o banco de dados continua vazio
         self.assertFalse(User.objects.exists())
