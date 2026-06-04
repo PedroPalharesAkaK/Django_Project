@@ -26,7 +26,7 @@ class Instituto(models.Model):
         return self.sigla
 
 class Professor(models.Model):
-    nome = models.CharField(max_length=30, unique=True)
+    nome = models.CharField(max_length=100, unique=True)
     descricao = models.CharField(max_length=100)
     
     biografia = models.TextField(max_length=2000, blank=True, null=True) 
