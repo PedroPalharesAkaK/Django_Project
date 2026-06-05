@@ -1,6 +1,6 @@
 import os #[cite: 2]
 import django #[cite: 2]
-
+# super harcoded btw
 # 1. Conecta este script às configurações do seu projeto Django[cite: 2]
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'ProjetoDjanto.settings') #[cite: 2]
 django.setup() #[cite: 2]
@@ -10,7 +10,7 @@ from boards.models import Professor, Instituto, Universidade
 
 def popular_banco_dados(): #[cite: 2]
     # Atualizado para o novo arquivo
-    caminho_arquivo = 'Nome professores ifusp.txt' 
+    caminho_arquivo = 'Nome professores iag.txt' 
     
     # 2. Preparamos as chaves estrangeiras ANTES do loop começar
     usp, _ = Universidade.objects.get_or_create(
@@ -18,9 +18,9 @@ def popular_banco_dados(): #[cite: 2]
         defaults={"nome": "Universidade de São Paulo"}
     )
     
-    ifusp, _ = Instituto.objects.get_or_create(
-        sigla="IFUSP",
-        defaults={"nome": "Instituto de Física", "universidade": usp}
+    iag, _ = Instituto.objects.get_or_create(
+        sigla="IAG",
+        defaults={"nome": "Instituto de Astronomia, Geofísica e Ciências Atmosféricas", "universidade": usp}
     )
 
     # Abre o arquivo garantindo a leitura correta de acentos (utf-8)[cite: 2]
@@ -30,7 +30,7 @@ def popular_banco_dados(): #[cite: 2]
     cadastrados = 0 #[cite: 2]
     ignorados = 0 #[cite: 2]
 
-    print("Iniciando a importação de docentes do IF...\n") 
+    print("Iniciando a importação de docentes do IAG...\n") 
 
     for linha in linhas: #[cite: 2]
         # Remove quebras de linha (\n) e espaços nas pontas[cite: 2]
@@ -47,7 +47,7 @@ def popular_banco_dados(): #[cite: 2]
                     'descricao': 'Instituto de Física (IF)', 
                     'visualizacoes': 0, #[cite: 2]
                     'universidade': usp,
-                    'instituto': ifusp
+                    'instituto': iag
                 }
             )
 
