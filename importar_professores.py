@@ -44,7 +44,7 @@ def popular_banco_dados(): #[cite: 2]
             professor, foi_criado = Professor.objects.get_or_create( #[cite: 2]
                 nome=nome, #[cite: 2]
                 defaults={ #[cite: 2]
-                    'descricao': 'Instituto de Física (IF)', 
+                    'descricao': 'Instituto de Astronomia, Geofísica e Ciências Atmosféricas(IAG)', 
                     'visualizacoes': 0, #[cite: 2]
                     'universidade': usp,
                     'instituto': iag
