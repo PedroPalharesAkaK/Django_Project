@@ -12,8 +12,8 @@ class NewAvaliacaoForm(forms.ModelForm):
     nota_didatica = forms.TypedChoiceField(
         choices=NOTAS_CHOICES, coerce=int, widget=forms.RadioSelect, label='Didática'
     )
-    nota_amor = forms.TypedChoiceField(
-        choices=NOTAS_CHOICES, coerce=int, widget=forms.RadioSelect, label='Amor por dar Aula'
+    nota_empenho = forms.TypedChoiceField(
+        choices=NOTAS_CHOICES, coerce=int, widget=forms.RadioSelect, label='Amor por dar Aula' #Os testes usam o nome nota_empenho
     )
     nota_relacao = forms.TypedChoiceField(
         choices=NOTAS_CHOICES, coerce=int, widget=forms.RadioSelect, label='Relação com os alunos'
@@ -36,7 +36,7 @@ class NewAvaliacaoForm(forms.ModelForm):
             'titulo', 
             'nota_geral', 
             'nota_didatica', 
-            'nota_amor', 
+            'nota_empenho', 
             'nota_relacao', 
             'nota_dificuldade', 
             'texto'
