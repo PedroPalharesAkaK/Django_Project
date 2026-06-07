@@ -77,13 +77,15 @@ class SuccessfulReplyAvaliacaoTests(ReplyAvaliacaoTestCase):
         '''
         Uma submissão válida deve redirecionar o utilizador 
         para a view avaliacao_comentarios, na última página, 
-        e fixar a âncora no comentário recém-criado.
+        e fixar a âncora no comentário recém-criado usando o ID real.
         '''
-        # 6. REDIRECIONAMENTO ATUALIZADO
         url = reverse('avaliacao_comentarios', kwargs={'pk': self.professor.pk, 'avaliacao_pk': self.avaliacao.pk})
         
-        # Mantive a sua brilhante lógica de testar se a âncora (#2) é injetada na URL
-        expected_url = f"{url}?page=1#2" 
+        # BUSCA DINÂMICA: Vai ao banco de dados e pega o último comentário criado
+        novo_comentario = Comentario.objects.last()
+        
+        # Monta a URL injetando a Chave Primária (pk) real que o banco gerou
+        expected_url = f"{url}?page=1#{novo_comentario.pk}" 
         
         self.assertRedirects(self.response, expected_url)
 
