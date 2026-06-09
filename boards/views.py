@@ -43,7 +43,10 @@ class ProfessorListView(ListView):
             
         elif sort == 'nota':
             # Calcula a média da 'nota_geral' direto no Banco de Dados para conseguir ordenar
-            queryset = queryset.annotate(media_db=Avg('avaliacoes__nota_geral')).order_by('-media_db')
+            # O F().desc(nulls_last=True) força o PostgreSQL a jogar os professores sem nota para o final
+            queryset = queryset.annotate(
+                media_db=Avg('avaliacoes__nota_geral')
+            ).order_by(F('media_db').desc(nulls_last=True))
             
         else:
             # Padrão: Ordenação alfabética pelo nome se nada for selecionado
