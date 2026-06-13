@@ -10,7 +10,7 @@ from boards.models import Professor, Instituto, Universidade
 
 def popular_banco_dados(): #[cite: 2]
     # Atualizado para o novo arquivo
-    caminho_arquivo = 'Nome professores fau.txt' 
+    caminho_arquivo = 'Nome professores igc.txt' 
     
     # 2. Preparamos as chaves estrangeiras ANTES do loop começar
     usp, _ = Universidade.objects.get_or_create(
@@ -18,9 +18,9 @@ def popular_banco_dados(): #[cite: 2]
         defaults={"nome": "Universidade de São Paulo"}
     )
     
-    fau, _ = Instituto.objects.get_or_create(
+    igc, _ = Instituto.objects.get_or_create(
         sigla="FAU",
-        defaults={"nome": "Faculdade de arquitetura e urbanismo", "universidade": usp}
+        defaults={"nome": "Instituto de Geociências", "universidade": usp}
     )
 
     # Abre o arquivo garantindo a leitura correta de acentos (utf-8)[cite: 2]
@@ -30,7 +30,7 @@ def popular_banco_dados(): #[cite: 2]
     cadastrados = 0 #[cite: 2]
     ignorados = 0 #[cite: 2]
 
-    print("Iniciando a importação de docentes do fau...\n") 
+    print("Iniciando a importação de docentes do igc...\n") 
 
     for linha in linhas: #[cite: 2]
         # Remove quebras de linha (\n) e espaços nas pontas[cite: 2]
@@ -44,10 +44,10 @@ def popular_banco_dados(): #[cite: 2]
             professor, foi_criado = Professor.objects.get_or_create( #[cite: 2]
                 nome=nome, #[cite: 2]
                 defaults={ #[cite: 2]
-                    'descricao': 'Faculdade de Arquitetura e Urbanismo', 
+                    'descricao': 'Instituto de Geociências', 
                     'visualizacoes': 0, #[cite: 2]
                     'universidade': usp,
-                    'instituto': fau
+                    'instituto': igc
                 }
             )
 
