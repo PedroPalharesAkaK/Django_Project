@@ -115,7 +115,8 @@
         {% for page_num in paginator.page_range %}
           {% if page_obj.number == page_num %}
             <li class="page-item active"><span class="page-link">{{ page_num }}</span></li>
-          {% else %}
+            
+          {% elif page_num > page_obj.number|add:'-3' and page_num < page_obj.number|add:'3' %}
             <li class="page-item">
               <a class="page-link" href="?page={{ page_num }}{% if request.GET.q %}&q={{ request.GET.q }}{% endif %}{% if request.GET.sort %}&sort={{ request.GET.sort }}{% endif %}">{{ page_num }}</a>
             </li>
