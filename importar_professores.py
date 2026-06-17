@@ -10,7 +10,7 @@ from boards.models import Professor, Instituto, Universidade
 
 def popular_banco_dados(): #[cite: 2]
     # Atualizado para o novo arquivo
-    caminho_arquivo = 'Nome professores ip.txt' 
+    caminho_arquivo = 'Nome professores eefe.txt' 
     
     # 2. Preparamos as chaves estrangeiras ANTES do loop começar
     usp, _ = Universidade.objects.get_or_create(
@@ -18,9 +18,9 @@ def popular_banco_dados(): #[cite: 2]
         defaults={"nome": "Universidade de São Paulo"}
     )
     
-    ip, _ = Instituto.objects.get_or_create(
-        sigla="IP",
-        defaults={"nome": "Instituto de Psicologia", "universidade": usp}
+    eefe, _ = Instituto.objects.get_or_create(
+        sigla="eefe",
+        defaults={"nome": "Escola de Educação Física e Esporte", "universidade": usp}
     )
 
     # Abre o arquivo garantindo a leitura correta de acentos (utf-8)[cite: 2]
@@ -30,7 +30,7 @@ def popular_banco_dados(): #[cite: 2]
     cadastrados = 0 #[cite: 2]
     ignorados = 0 #[cite: 2]
 
-    print("Iniciando a importação de docentes do ip...\n") 
+    print("Iniciando a importação de docentes do eefe...\n") 
 
     for linha in linhas: #[cite: 2]
         # Remove quebras de linha (\n) e espaços nas pontas[cite: 2]
@@ -44,10 +44,10 @@ def popular_banco_dados(): #[cite: 2]
             professor, foi_criado = Professor.objects.get_or_create( #[cite: 2]
                 nome=nome, #[cite: 2]
                 defaults={ #[cite: 2]
-                    'descricao': 'Instituto de Psicologia', 
+                    'descricao': 'IEscola de Educação Física e Esporte', 
                     'visualizacoes': 0, #[cite: 2]
                     'universidade': usp,
-                    'instituto': ip
+                    'instituto': eefe
                 }
             )
 
