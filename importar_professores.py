@@ -10,7 +10,7 @@ from boards.models import Professor, Instituto, Universidade
 
 def popular_banco_dados(): #[cite: 2]
     # Atualizado para o novo arquivo
-    caminho_arquivo = 'Nome professores fmvz.txt' 
+    caminho_arquivo = 'Nome professores fo.txt' 
     
     # 2. Preparamos as chaves estrangeiras ANTES do loop começar
     usp, _ = Universidade.objects.get_or_create(
@@ -18,9 +18,9 @@ def popular_banco_dados(): #[cite: 2]
         defaults={"nome": "Universidade de São Paulo"}
     )
     
-    fmvz, _ = Instituto.objects.get_or_create(
-        sigla="fmvz",
-        defaults={"nome": "Faculdade de Medicina Veterinária e Zootecnia", "universidade": usp}
+    fo, _ = Instituto.objects.get_or_create(
+        sigla="fo",
+        defaults={"nome": "Faculdade de Odontologia", "universidade": usp}
     )
 
     # Abre o arquivo garantindo a leitura correta de acentos (utf-8)[cite: 2]
@@ -30,7 +30,7 @@ def popular_banco_dados(): #[cite: 2]
     cadastrados = 0 #[cite: 2]
     ignorados = 0 #[cite: 2]
 
-    print("Iniciando a importação de docentes do fmvz...\n") 
+    print("Iniciando a importação de docentes do fo...\n") 
 
     for linha in linhas: #[cite: 2]
         # Remove quebras de linha (\n) e espaços nas pontas[cite: 2]
@@ -44,10 +44,10 @@ def popular_banco_dados(): #[cite: 2]
             professor, foi_criado = Professor.objects.get_or_create( #[cite: 2]
                 nome=nome, #[cite: 2]
                 defaults={ #[cite: 2]
-                    'descricao': 'Faculdade de Medicina Veterinária e Zootecnia', 
+                    'descricao': 'Faculdade de Odontologia', 
                     'visualizacoes': 0, #[cite: 2]
                     'universidade': usp,
-                    'instituto': fmvz
+                    'instituto': fo
                 }
             )
 
