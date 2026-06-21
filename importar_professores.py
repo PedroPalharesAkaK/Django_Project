@@ -10,7 +10,7 @@ from boards.models import Professor, Instituto, Universidade
 
 def popular_banco_dados(): #[cite: 2]
     # Atualizado para o novo arquivo
-    caminho_arquivo = 'Nome professores fflchLIN.txt' 
+    caminho_arquivo = 'Nome professores fflchLM.txt' 
     
     # 2. Preparamos as chaves estrangeiras ANTES do loop começar
     usp, _ = Universidade.objects.get_or_create(
@@ -44,7 +44,7 @@ def popular_banco_dados(): #[cite: 2]
             professor, foi_criado = Professor.objects.get_or_create( #[cite: 2]
                 nome=nome, #[cite: 2]
                 defaults={ #[cite: 2]
-                    'descricao': 'Faculdade de Filosofia, Letras e Ciências Humanas (Linguística)', 
+                    'descricao': 'Faculdade de Filosofia, Letras e Ciências Humanas (Letras Modernas)', 
                     'visualizacoes': 0, #[cite: 2]
                     'universidade': usp,
                     'instituto': fflch
