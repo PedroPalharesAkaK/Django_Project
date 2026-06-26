@@ -21,8 +21,12 @@
           <input type="text" name="q" class="form-control" placeholder="Pesquisar professor..." value="{{ request.GET.q }}">
           
           <select name="sort" class="form-select" style="max-width: 220px;">
-            <option value="">Ordem alfabetica</option>
-            <option value="nota" {% if request.GET.sort == 'nota' %}selected{% endif %}>Maior Nota Geral</option>
+            <!-- O valor vazio agora é o padrão de Maior Nota -->
+            <option value="">Maior Nota (Padrão)</option>
+            
+            <!-- A ordem alfabética ganhou o seu próprio valor para ativar o 'elif' -->
+            <option value="alfabetica" {% if request.GET.sort == 'alfabetica' %}selected{% endif %}>Ordem alfabética</option>
+            
             <option value="visualizacoes" {% if request.GET.sort == 'visualizacoes' %}selected{% endif %}>Mais Visualizações</option>
             <option value="avaliacoes" {% if request.GET.sort == 'avaliacoes' %}selected{% endif %}>Mais Avaliações</option>
           </select>

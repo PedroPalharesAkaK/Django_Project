@@ -30,7 +30,7 @@ class ProfessorListView(ListView):
         if query:
             queryset = queryset.filter(nome__icontains=query)
             
-        # 2. Filtro de Ordenação (O nosso novo menu!)
+        # 2. Filtro de Ordenação (Atualizado)
         sort = self.request.GET.get('sort')
         
         if sort == 'visualizacoes':
@@ -41,16 +41,16 @@ class ProfessorListView(ListView):
             # Conta quantas avaliações cada professor tem e ordena do maior para o menor
             queryset = queryset.annotate(total_avaliacoes=Count('avaliacoes')).order_by('-total_avaliacoes')
             
-        elif sort == 'nota':
-            # Calcula a média da 'nota_geral' direto no Banco de Dados para conseguir ordenar
-            # O F().desc(nulls_last=True) força o PostgreSQL a jogar os professores sem nota para o final
+        elif sort == 'alfabetica':
+            # A ordem alfabética agora passa a ser ativada apenas se escolhida no menu
+            queryset = queryset.order_by('nome')
+            
+        else:
+            # PADRÃO ABSOLUTO: Se não houver filtro (página inicial), traz a Maior Nota Geral
+            # O F().desc(nulls_last=True) empurra quem não tem nota para o final
             queryset = queryset.annotate(
                 media_db=Avg('avaliacoes__nota_geral')
             ).order_by(F('media_db').desc(nulls_last=True))
-            
-        else:
-            # Padrão: Ordenação alfabética pelo nome se nada for selecionado
-            queryset = queryset.order_by('nome')
 
         return queryset
 
