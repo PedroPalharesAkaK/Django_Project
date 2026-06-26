@@ -31,9 +31,22 @@ class HomeSortTests(TestCase):
 
         self.url = reverse('home')
 
-    def test_sort_default_alfabetico(self):
-        """Se o utilizador não clicar em nada, deve vir em ordem alfabética."""
+    def test_sort_default_maior_nota(self):
+        """
+        O NOVO PADRÃO: Se o utilizador não clicar em nada, o Carlos (5.0) 
+        tem de vir primeiro, a Ana (3.0) depois, e a Zélia (Sem nota) no fim.
+        """
         response = self.client.get(self.url)
+        professores = list(response.context.get('professors'))
+        
+        self.assertEqual(professores, [self.prof_carlos, self.prof_ana, self.prof_zelia])
+
+    def test_sort_alfabetica(self):
+        """
+        FILTRO ESPECÍFICO: Agora a ordem alfabética só é ativada com ?sort=alfabetica.
+        A Ana deve vir primeiro.
+        """
+        response = self.client.get(f"{self.url}?sort=alfabetica")
         professores = list(response.context.get('professors'))
         
         self.assertEqual(professores, [self.prof_ana, self.prof_carlos, self.prof_zelia])
@@ -48,17 +61,6 @@ class HomeSortTests(TestCase):
     def test_sort_avaliacoes_quantidade(self):
         """Filtro de total de avaliações deve trazer o Carlos (2), Ana (1), Zélia (0)."""
         response = self.client.get(f"{self.url}?sort=avaliacoes")
-        professores = list(response.context.get('professors'))
-        
-        self.assertEqual(professores, [self.prof_carlos, self.prof_ana, self.prof_zelia])
-
-    def test_sort_maior_nota(self):
-        """
-        Filtro de nota. O Carlos tem média 5.0, a Ana tem 3.0.
-        A Zélia não tem nota (NULL), por isso o nosso 'nulls_last=True'
-        tem de garantir que ela seja empurrada para o final da lista.
-        """
-        response = self.client.get(f"{self.url}?sort=nota")
         professores = list(response.context.get('professors'))
         
         self.assertEqual(professores, [self.prof_carlos, self.prof_ana, self.prof_zelia])
