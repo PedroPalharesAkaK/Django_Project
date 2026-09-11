@@ -170,7 +170,11 @@
             <td class="text-start align-middle">
               <p class="mb-1">
                 <a href="{{ avaliacao_url }}" class="fw-bold text-decoration-none text-dark">{{ avaliacao.titulo }}</a>
-                <span class="badge badge-rating bg-primary ms-2">{{ avaliacao.nota_geral }}/5</span>
+                {% if avaliacao.excluir_da_media %}
+                  <span class="badge badge-rating bg-secondary ms-2" title="Comentário sem nota numérica atribuída pelo autor original">Sem nota</span>
+                {% else %}
+                  <span class="badge badge-rating bg-primary ms-2">{{ avaliacao.nota_geral }}/5</span>
+                {% endif %}
               </p>
               
               <small class="text-muted d-block mb-1">

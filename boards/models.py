@@ -52,7 +52,7 @@ class Professor(models.Model):
 
     def _get_avg(self, field_name):
         """Método auxiliar interno para calcular a média de um quesito"""
-        avg = self.avaliacoes.aggregate(Avg(field_name))[f'{field_name}__avg']
+        avg = self.avaliacoes.filter(excluir_da_media=False).aggregate(Avg(field_name))[f'{field_name}__avg']
         return round(avg, 1) if avg else 0
 
     # Métodos que devolvem a nota decimal (Ex: 4.3)
@@ -95,6 +95,10 @@ class Avaliacao(models.Model):
     nota_empenho = models.IntegerField(default=0, validators=[MinValueValidator(0), MaxValueValidator(5)])
     nota_relacao = models.IntegerField(default=0, validators=[MinValueValidator(0), MaxValueValidator(5)])
     nota_dificuldade = models.IntegerField(default=0, validators=[MinValueValidator(0), MaxValueValidator(5)])
+
+    # Avaliações importadas de fontes externas (ex: comentários de texto livre sem
+    # nota original) que não devem contar nas médias do professor.
+    excluir_da_media = models.BooleanField(default=False)
 
     def __str__(self):
         return self.titulo
