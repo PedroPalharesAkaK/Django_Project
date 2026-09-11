@@ -8,7 +8,7 @@ from django.db import transaction # Adicione este import
 from django.utils import timezone
 from django.utils.decorators import method_decorator
 from django.views.generic import UpdateView
-from django.db.models import Count, Avg
+from django.db.models import Count, Avg, Q
 from django.views.generic import ListView
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger 
 from django.db.models import F
@@ -48,8 +48,11 @@ class ProfessorListView(ListView):
         else:
             # PADRÃO ABSOLUTO: Se não houver filtro (página inicial), traz a Maior Nota Geral
             # O F().desc(nulls_last=True) empurra quem não tem nota para o final
+            # Precisa ignorar avaliações com excluir_da_media=True (ex: comentários
+            # importados sem nota real), senão essa média diverge da exibida na tela
+            # (Professor.get_media_geral() já faz esse filtro).
             queryset = queryset.annotate(
-                media_db=Avg('avaliacoes__nota_geral')
+                media_db=Avg('avaliacoes__nota_geral', filter=Q(avaliacoes__excluir_da_media=False))
             ).order_by(F('media_db').desc(nulls_last=True))
 
         return queryset
