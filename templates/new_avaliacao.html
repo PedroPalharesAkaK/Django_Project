@@ -13,44 +13,47 @@
     
     /* Esconde a bolinha padrão do navegador */
     .radio-toolbar input[type="radio"] {
-      display: none; 
+      display: none;
     }
-    
-    /* Desenha os quadrados cinzentos exatamente como no seu print */
+
+    /* Desenha os quadrados exatamente como no seu print, na paleta nova */
     .radio-toolbar label {
       display: inline-flex;
       align-items: center;
       justify-content: center;
       width: 45px;
       height: 45px;
-      background-color: #e6e6e6;
-      color: #888;
+      background-color: var(--da-bg-alt);
+      border: 1px solid var(--da-border);
+      color: var(--da-text-muted);
       font-weight: 500;
       font-size: 1.1rem;
       cursor: pointer;
       transition: all 0.2s ease-in-out;
       border-radius: 3px;
     }
-    
-    /* O Azul que aparece quando o utilizador clica no número */
+
+    /* O destaque em latão que aparece quando o utilizador clica no número */
     .radio-toolbar input[type="radio"]:checked + label {
-      background-color: #3b8cc6; 
-      color: white;
+      background-color: var(--da-accent);
+      border-color: var(--da-accent);
+      color: var(--da-accent-contrast);
     }
-    
+
     /* Efeito de passar o rato (Hover) */
     .radio-toolbar label:hover {
-      background-color: #d4d4d4;
-      color: #444;
+      background-color: var(--da-surface-2);
+      border-color: var(--da-border-strong);
+      color: var(--da-text);
     }
 
     /* Linhas separadoras elegantes entre os quesitos */
     .criterio-row {
-      border-bottom: 1px solid #f0f0f0;
+      border-bottom: 1px solid var(--da-border);
       padding-bottom: 12px;
       margin-bottom: 15px;
     }
-    
+
     .criterio-row:last-child {
       border-bottom: none;
       margin-bottom: 0;
@@ -59,7 +62,7 @@
     /* Borda divisória para ecrãs grandes */
     @media (min-width: 768px) {
       .divisor-colunas {
-        border-right: 1px solid #e0e0e0;
+        border-right: 1px solid var(--da-border);
       }
     }
   </style>

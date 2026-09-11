@@ -1,18 +1,1 @@
-body {
-  background-image: url('../img/denim.webp');
-}
-
-@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@700&display=swap');
-
-.logo {
-    font-family: 'Montserrat', sans-serif;
-}
-
-.logo a {
-  color: rgba(0, 0, 0, 0.9);
-}
-
-.logo a:hover,
-.logo a:active {
-  text-decoration: none;
-}
+/* Estilos específicos das páginas de conta (login, signup, senha). */

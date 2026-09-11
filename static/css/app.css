@@ -1,0 +1,336 @@
+/* =========================================================================
+   Fórum de Avaliações — tema "Acadêmico Clássico Claro"
+   Paleta: papel/branco, azul-marinho como destaque, verde/vinho discretos.
+   Tipografia: Lora (títulos, serifa) + Inter (corpo, sans-serif limpa).
+   ========================================================================= */
+
+:root {
+  --da-bg: #f7f5f0;
+  --da-bg-alt: #efece3;
+  --da-surface: #ffffff;
+  --da-surface-2: #f4f2ea;
+  --da-border: #e2ddd0;
+  --da-border-strong: #cdc5b0;
+
+  --da-accent: #1f3a5f;
+  --da-accent-bright: #2c5382;
+  --da-accent-dim: #16283f;
+  --da-accent-contrast: #ffffff;
+
+  --da-text: #262420;
+  --da-text-muted: #6f6a5c;
+
+  --da-success: #2f6b4f;
+  --da-success-bright: #3f8a67;
+  --da-danger: #a13c3c;
+  --da-danger-bright: #b95050;
+  --da-warning: #a97c1f;
+  --da-warning-bright: #c6952f;
+  --da-info: #3d6f80;
+
+  --da-font-display: 'Lora', Georgia, 'Times New Roman', serif;
+  --da-font-body: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+}
+
+/* -------------------------------------------------------------------------
+   Bootstrap variable overrides — retheme the whole framework from here.
+   ------------------------------------------------------------------------- */
+[data-bs-theme="light"] {
+  --bs-body-bg: var(--da-bg);
+  --bs-body-color: var(--da-text);
+  --bs-body-font-family: var(--da-font-body);
+  --bs-emphasis-color: var(--da-text);
+  --bs-secondary-color: var(--da-text-muted);
+  --bs-tertiary-bg: var(--da-surface-2);
+  --bs-secondary-bg: var(--da-surface-2);
+  --bs-border-color: var(--da-border);
+  --bs-border-color-translucent: var(--da-border);
+  --bs-heading-color: var(--da-text);
+
+  --bs-primary: var(--da-accent);
+  --bs-primary-rgb: 31, 58, 95;
+  --bs-link-color: var(--da-accent);
+  --bs-link-color-rgb: 31, 58, 95;
+  --bs-link-hover-color: var(--da-accent-bright);
+  --bs-link-hover-color-rgb: 44, 83, 130;
+
+  --bs-secondary: #6f6a5c;
+  --bs-secondary-rgb: 111, 106, 92;
+  --bs-success: var(--da-success);
+  --bs-success-rgb: 47, 107, 79;
+  --bs-danger: var(--da-danger);
+  --bs-danger-rgb: 161, 60, 60;
+  --bs-warning: var(--da-warning);
+  --bs-warning-rgb: 169, 124, 31;
+  --bs-info: var(--da-info);
+  --bs-info-rgb: 61, 111, 128;
+
+  --bs-dark: #1c1c1a;
+  --bs-dark-rgb: 28, 28, 26;
+  --bs-light: var(--da-surface-2);
+  --bs-light-rgb: 244, 242, 234;
+}
+
+html, body { background-color: var(--da-bg); }
+
+body {
+  font-family: var(--da-font-body);
+  font-size: 1rem;
+  color: var(--da-text);
+}
+
+h1, h2, h3, h4, h5, h6,
+.display-6, .card-title, .navbar-brand {
+  font-family: var(--da-font-display);
+  color: var(--da-text);
+  letter-spacing: 0;
+  font-weight: 600;
+}
+
+a { text-decoration-thickness: 1px; }
+a:hover { text-decoration-color: var(--da-accent); }
+
+::selection { background: var(--da-accent); color: #fff; }
+
+/* -------------------------------------------------------------------------
+   Utilities Bootstrap doesn't swap with color mode (hardcoded in core CSS)
+   ------------------------------------------------------------------------- */
+.bg-white { background-color: var(--da-surface) !important; }
+.bg-light { background-color: var(--da-surface-2) !important; }
+.table-light, .table-light > * { --bs-table-bg: var(--da-surface); background-color: var(--da-surface) !important; color: var(--da-text) !important; }
+.text-dark { color: var(--da-text) !important; }
+.text-muted { color: var(--da-text-muted) !important; }
+.text-secondary { color: var(--da-text-muted) !important; }
+.border { border-color: var(--da-border) !important; }
+.border-dark { border-color: var(--da-border-strong) !important; }
+.shadow, .shadow-sm { box-shadow: 0 2px 10px rgba(38, 36, 32, 0.07) !important; }
+
+/* -------------------------------------------------------------------------
+   Navbar
+   ------------------------------------------------------------------------- */
+.navbar.bg-dark {
+  background-color: var(--da-accent-dim) !important;
+  border-bottom: 1px solid var(--da-accent-dim);
+}
+
+.navbar-brand {
+  font-family: var(--da-font-display);
+  font-weight: 700;
+  font-size: 1.35rem;
+  color: #fff !important;
+}
+
+.navbar-dark .navbar-nav .nav-link {
+  font-family: var(--da-font-body);
+  color: rgba(255, 255, 255, 0.82) !important;
+  font-size: 0.92rem;
+  font-weight: 500;
+  padding-left: 0.9rem;
+  padding-right: 0.9rem;
+  transition: color 0.15s ease;
+}
+
+.navbar-dark .navbar-nav .nav-link:hover,
+.navbar-dark .navbar-nav .nav-link:focus {
+  color: #fff !important;
+}
+
+.navbar .dropdown-menu {
+  background-color: var(--da-surface);
+  border: 1px solid var(--da-border);
+}
+.navbar .dropdown-item { color: var(--da-text); }
+.navbar .dropdown-item:hover,
+.navbar .dropdown-item:focus {
+  background-color: var(--da-surface-2);
+  color: var(--da-accent);
+}
+.navbar .dropdown-divider { border-color: var(--da-border); }
+
+/* -------------------------------------------------------------------------
+   Buttons
+   ------------------------------------------------------------------------- */
+.btn { font-family: var(--da-font-body); font-weight: 600; border-radius: 5px; }
+
+.btn-primary {
+  --bs-btn-color: #fff;
+  --bs-btn-bg: var(--da-accent);
+  --bs-btn-border-color: var(--da-accent);
+  --bs-btn-hover-color: #fff;
+  --bs-btn-hover-bg: var(--da-accent-bright);
+  --bs-btn-hover-border-color: var(--da-accent-bright);
+  --bs-btn-active-bg: var(--da-accent-dim);
+  --bs-btn-active-border-color: var(--da-accent-dim);
+  --bs-btn-disabled-bg: var(--da-accent);
+  --bs-btn-disabled-border-color: var(--da-accent);
+}
+
+.btn-outline-secondary {
+  --bs-btn-color: var(--da-text);
+  --bs-btn-border-color: var(--da-border-strong);
+  --bs-btn-hover-color: #fff;
+  --bs-btn-hover-bg: var(--da-accent);
+  --bs-btn-hover-border-color: var(--da-accent);
+}
+
+.btn-secondary {
+  --bs-btn-bg: var(--da-surface-2);
+  --bs-btn-border-color: var(--da-border-strong);
+  --bs-btn-color: var(--da-text);
+  --bs-btn-hover-bg: var(--da-border);
+  --bs-btn-hover-color: var(--da-text);
+}
+
+.btn-success {
+  --bs-btn-bg: var(--da-success);
+  --bs-btn-border-color: var(--da-success);
+  --bs-btn-hover-bg: var(--da-success-bright);
+  --bs-btn-hover-border-color: var(--da-success-bright);
+}
+
+.btn-light {
+  --bs-btn-bg: var(--da-surface-2);
+  --bs-btn-border-color: var(--da-border);
+  --bs-btn-color: var(--da-text);
+  --bs-btn-hover-bg: var(--da-border);
+  --bs-btn-hover-color: var(--da-text);
+}
+
+/* -------------------------------------------------------------------------
+   Cards, alerts, breadcrumb
+   ------------------------------------------------------------------------- */
+.card {
+  background-color: var(--da-surface);
+  border: 1px solid var(--da-border);
+}
+.card-header { background-color: var(--da-surface-2); border-bottom-color: var(--da-border); }
+.card-footer { background-color: var(--da-surface-2); border-top-color: var(--da-border); }
+
+.breadcrumb-item + .breadcrumb-item::before { color: var(--da-text-muted); }
+.breadcrumb-item.active { color: var(--da-text-muted); }
+
+.alert { border-width: 1px 1px 1px 4px; border-style: solid; border-radius: 4px; }
+.alert-success { background-color: rgba(47, 107, 79, 0.08); border-color: var(--da-border); border-left-color: var(--da-success); color: var(--da-text); }
+.alert-danger { background-color: rgba(161, 60, 60, 0.08); border-color: var(--da-border); border-left-color: var(--da-danger); color: var(--da-text); }
+.alert-warning { background-color: rgba(169, 124, 31, 0.08); border-color: var(--da-border); border-left-color: var(--da-warning); color: var(--da-text); }
+.alert-info { background-color: rgba(61, 111, 128, 0.08); border-color: var(--da-border); border-left-color: var(--da-info); color: var(--da-text); }
+
+/* -------------------------------------------------------------------------
+   Tables
+   ------------------------------------------------------------------------- */
+.table { --bs-table-bg: transparent; color: var(--da-text); border-color: var(--da-border); }
+.table > :not(caption) > * > * { border-bottom-color: var(--da-border); }
+
+.table-dark, .table-dark > * {
+  --bs-table-bg: var(--da-accent-dim);
+  --bs-table-color: #fff;
+}
+.table-dark th {
+  text-transform: uppercase;
+  font-size: 0.76rem;
+  letter-spacing: 0.07em;
+  font-weight: 600;
+}
+
+.table-striped > tbody > tr:nth-of-type(odd) > * {
+  --bs-table-accent-bg: var(--da-surface-2);
+  color: var(--da-text);
+}
+.table-hover > tbody > tr:hover > * {
+  --bs-table-accent-bg: rgba(31, 58, 95, 0.06);
+  color: var(--da-text);
+}
+
+/* -------------------------------------------------------------------------
+   Badges
+   ------------------------------------------------------------------------- */
+.badge.bg-success { color: #fff !important; }
+.badge.bg-danger { color: #fff !important; }
+.badge.bg-warning { color: #fff !important; }
+.badge.bg-secondary { background-color: var(--da-surface-2) !important; color: var(--da-text-muted) !important; border: 1px solid var(--da-border); }
+.badge.bg-primary { color: #fff !important; }
+.badge.bg-light { background-color: var(--da-surface-2) !important; color: var(--da-text-muted) !important; border: 1px solid var(--da-border); }
+
+/* Selo de nota — sem preenchimento sólido, sem emoji, borda fina na cor do nível */
+.badge-rating {
+  background-color: var(--da-surface) !important;
+  border: 1px solid currentColor;
+  font-family: var(--da-font-display);
+  font-weight: 600;
+  font-size: 0.92rem;
+  letter-spacing: 0.01em;
+  padding: 0.42em 0.85em;
+}
+.badge-rating.bg-success { color: var(--da-success) !important; }
+.badge-rating.bg-warning { color: var(--da-warning) !important; }
+.badge-rating.bg-danger { color: var(--da-danger) !important; }
+.badge-rating.bg-primary { color: var(--da-accent) !important; }
+
+/* -------------------------------------------------------------------------
+   Forms
+   ------------------------------------------------------------------------- */
+.form-control, .form-select {
+  background-color: var(--da-surface);
+  border: 1px solid var(--da-border-strong);
+  color: var(--da-text);
+}
+.form-control:focus, .form-select:focus {
+  background-color: var(--da-surface);
+  color: var(--da-text);
+  border-color: var(--da-accent);
+  box-shadow: 0 0 0 0.2rem rgba(31, 58, 95, 0.15);
+}
+.form-control::placeholder { color: var(--da-text-muted); opacity: 0.7; }
+.form-control.is-valid, .was-validated .form-control:valid { border-color: var(--da-success); }
+.form-control.is-invalid, .was-validated .form-control:invalid { border-color: var(--da-danger); }
+label, .form-label { color: var(--da-text); font-weight: 600; }
+
+/* -------------------------------------------------------------------------
+   Progress bars
+   ------------------------------------------------------------------------- */
+.progress { background-color: var(--da-surface-2); border: 1px solid var(--da-border); }
+.progress-bar { background-color: var(--da-accent); color: #fff; }
+.progress-bar.bg-danger { background-color: var(--da-danger) !important; color: #fff; }
+
+/* -------------------------------------------------------------------------
+   Pagination
+   ------------------------------------------------------------------------- */
+.page-link {
+  background-color: var(--da-surface);
+  border-color: var(--da-border);
+  color: var(--da-text);
+}
+.page-link:hover { background-color: var(--da-surface-2); color: var(--da-accent); border-color: var(--da-border); }
+.page-item.active .page-link { background-color: var(--da-accent); border-color: var(--da-accent); color: #fff; }
+.page-item.disabled .page-link { background-color: var(--da-surface-2); border-color: var(--da-border); color: var(--da-text-muted); }
+
+/* -------------------------------------------------------------------------
+   Hero / welcome banner (home)
+   ------------------------------------------------------------------------- */
+.p-4.mb-4.bg-light.rounded-3 {
+  background-color: var(--da-surface) !important;
+  border: 1px solid var(--da-border) !important;
+  border-left: 3px solid var(--da-accent) !important;
+}
+
+/* -------------------------------------------------------------------------
+   Account pages (login / signup / password)
+   ------------------------------------------------------------------------- */
+.account-page { max-width: 440px; margin: 3rem auto 0; }
+.account-page .logo a {
+  font-family: var(--da-font-display);
+  font-weight: 700;
+  font-size: 1.5rem;
+  color: var(--da-accent);
+  text-decoration: none;
+}
+.account-page .logo a:hover { color: var(--da-accent-bright); }
+
+/* -------------------------------------------------------------------------
+   Misc
+   ------------------------------------------------------------------------- */
+hr { border-color: var(--da-border); opacity: 1; }
+.dropdown-menu { background-color: var(--da-surface); border-color: var(--da-border); }
+.dropdown-item { color: var(--da-text); }
+.dropdown-item:hover, .dropdown-item:focus { background-color: var(--da-surface-2); color: var(--da-accent); }
+.dropdown-divider { border-color: var(--da-border); }

@@ -119,6 +119,13 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
+# Permite login com nome de usuário OU e-mail (mantém o backend padrão como
+# reserva, ex: para o createsuperuser e o admin).
+AUTHENTICATION_BACKENDS = [
+    'accounts.backends.EmailOrUsernameModelBackend',
+    'django.contrib.auth.backends.ModelBackend',
+]
+
 
 # Internationalization
 # https://docs.djangoproject.com/en/6.0/topics/i18n/

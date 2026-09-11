@@ -9,26 +9,24 @@
   <style>
     /* Estilos do Painel do Professor */
     .professor-card {
-      background: #fff;
+      background: var(--da-surface);
       border-radius: 8px;
-      border: none;
+      border: 1px solid var(--da-border);
     }
     .profile-img {
       width: 140px;
       height: 140px;
       object-fit: cover;
       border-radius: 50%;
-      background-color: #f8f9fa;
-      border: 3px solid #e9ecef;
+      background-color: var(--da-bg-alt);
+      border: 3px solid var(--da-border-strong);
     }
     .progress {
       height: 16px;
-      background-color: #e9ecef;
       border-radius: 4px;
       margin-bottom: 0;
     }
     .progress-bar {
-      background-color: #3b8cc6;
       font-weight: bold;
       font-size: 0.75rem;
     }
@@ -36,12 +34,12 @@
       font-weight: 500;
       margin-bottom: 2px;
       font-size: 0.88rem;
-      color: #333;
+      color: var(--da-text);
     }
     .biografia-box {
-      font-size: 0.95rem; 
-      line-height: 1.6; 
-      max-height: 175px; 
+      font-size: 0.95rem;
+      line-height: 1.6;
+      max-height: 175px;
       overflow-y: auto;
     }
   </style>
@@ -172,7 +170,7 @@
             <td class="text-start align-middle">
               <p class="mb-1">
                 <a href="{{ avaliacao_url }}" class="fw-bold text-decoration-none text-dark">{{ avaliacao.titulo }}</a>
-                <span class="badge bg-primary text-white ms-2">★ {{ avaliacao.nota_geral }}/5</span>
+                <span class="badge badge-rating bg-primary ms-2">{{ avaliacao.nota_geral }}/5</span>
               </p>
               
               <small class="text-muted d-block mb-1">

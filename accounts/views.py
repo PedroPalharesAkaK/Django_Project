@@ -52,7 +52,9 @@ def activate(request, uidb64, token):
     if user is not None and default_token_generator.check_token(user, token):
         user.is_active = True
         user.save()
-        auth_login(request, user) # Faz o login automático após confirmar
+        # Faz o login automático após confirmar. Precisa indicar o backend explicitamente
+        # porque o usuário não veio de authenticate() e o projeto tem mais de um backend configurado.
+        auth_login(request, user, backend='accounts.backends.EmailOrUsernameModelBackend')
         return render(request, 'email_confirmed.html')
     else:
         # Se o link estiver expirado ou quebrado
