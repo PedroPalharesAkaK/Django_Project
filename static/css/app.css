@@ -173,6 +173,16 @@ a:hover { text-decoration-color: var(--da-accent); }
   --bs-btn-hover-border-color: var(--da-accent);
 }
 
+/* Dentro da navbar escura o texto quase-preto do outline-secondary some.
+   "Log in" precisa de cores claras mesmo sem hover. */
+.navbar .btn-outline-secondary {
+  --bs-btn-color: rgba(255, 255, 255, 0.85);
+  --bs-btn-border-color: rgba(255, 255, 255, 0.4);
+  --bs-btn-hover-color: var(--da-accent-dim);
+  --bs-btn-hover-bg: #fff;
+  --bs-btn-hover-border-color: #fff;
+}
+
 .btn-secondary {
   --bs-btn-bg: var(--da-surface-2);
   --bs-btn-border-color: var(--da-border-strong);
