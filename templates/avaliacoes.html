@@ -5,46 +5,6 @@
   {{ professor.nome }} - {{ block.super }}
 {% endblock %}
 
-{% block stylesheet %}
-  <style>
-    /* Estilos do Painel do Professor */
-    .professor-card {
-      background: var(--da-surface);
-      border-radius: 8px;
-      border: 1px solid var(--da-border);
-    }
-    .profile-img {
-      width: 140px;
-      height: 140px;
-      object-fit: cover;
-      border-radius: 50%;
-      background-color: var(--da-bg-alt);
-      border: 3px solid var(--da-border-strong);
-    }
-    .progress {
-      height: 16px;
-      border-radius: 4px;
-      margin-bottom: 0;
-    }
-    .progress-bar {
-      font-weight: bold;
-      font-size: 0.75rem;
-    }
-    .criterio-label {
-      font-weight: 500;
-      margin-bottom: 2px;
-      font-size: 0.88rem;
-      color: var(--da-text);
-    }
-    .biografia-box {
-      font-size: 0.95rem;
-      line-height: 1.6;
-      max-height: 175px;
-      overflow-y: auto;
-    }
-  </style>
-{% endblock %}
-
 {% block breadcrumb %}
   <li class="breadcrumb-item"><a href="{% url 'home' %}">Professores</a></li>
   <li class="breadcrumb-item active">{{ professor.nome }}</li>
@@ -52,92 +12,8 @@
 
 {% block content %}
   
-  <div class="card shadow-sm mb-4 professor-card">
-    <div class="card-body p-4">
-      <div class="row">
-        
-        <div class="col-md-3 text-center border-end d-flex flex-column align-items-center justify-content-center">
-          {% if professor.foto_url %}
-            <img src="{{ professor.foto_url }}" alt="{{ professor.nome }}" class="profile-img mb-3">
-          {% else %}
-            <svg class="profile-img mb-3 text-secondary p-2" fill="currentColor" viewBox="0 0 24 24">
-              <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
-            </svg>
-          {% endif %}
-          <h4 class="fw-bold mb-1">{{ professor.nome }}</h4>
-          <p class="text-muted small mb-0">{{ professor.descricao }}</p>
-          <span class="badge bg-light text-secondary border mt-2">👁️ {{ professor.visualizacoes }} visualizações</span>
-        </div>
-
-        <div class="col-md-5 px-md-4 mt-4 mt-md-0 d-flex flex-column justify-content-center">
-          <h5 class="fw-bold text-secondary mb-3">Trajetória / Currículo Lattes</h5>
-          <div class="text-muted biografia-box">
-            {% if professor.biografia %}
-              {{ professor.biografia|linebreaks }}
-            {% else %}
-              <p class="fst-italic text-muted">Nenhuma trajetória académica ou link do currículo Lattes registado para este docente.</p>
-            {% endif %}
-          </div>
-        </div>
-
-        <div class="col-md-4 px-md-4 mt-4 mt-md-0 border-start d-flex flex-column justify-content-center">
-          <h5 class="fw-bold text-secondary mb-3">Médias Gerais</h5>
-          
-          <div class="mb-2">
-            <div class="d-flex justify-content-between criterio-label">
-              <span>Nota Geral</span>
-              <span class="fw-bold text-primary">{{ professor.get_media_geral }}/5</span>
-            </div>
-            <div class="progress">
-              <div class="progress-bar" role="progressbar" style="width: {{ professor.get_percent_geral }}%;" aria-valuenow="{{ professor.get_media_geral }}" aria-valuemin="0" aria-valuemax="5"></div>
-            </div>
-          </div>
-
-          <div class="mb-2">
-            <div class="d-flex justify-content-between criterio-label">
-              <span>Didática</span>
-              <span class="fw-bold">{{ professor.get_media_didatica }}/5</span>
-            </div>
-            <div class="progress">
-              <div class="progress-bar" role="progressbar" style="width: {{ professor.get_percent_didatica }}%;" aria-valuenow="{{ professor.get_media_didatica }}" aria-valuemin="0" aria-valuemax="5"></div>
-            </div>
-          </div>
-
-          <div class="mb-2">
-            <div class="d-flex justify-content-between criterio-label">
-              <span>Amor por dar Aula</span>
-              <span class="fw-bold">{{ professor.get_media_empenho }}/5</span>
-            </div>
-            <div class="progress">
-              <div class="progress-bar" role="progressbar" style="width: {{ professor.get_percent_empenho }}%;" aria-valuenow="{{ professor.get_media_empenho }}" aria-valuemin="0" aria-valuemax="5"></div>
-            </div>
-          </div>
-
-          <div class="mb-2">
-            <div class="d-flex justify-content-between criterio-label">
-              <span>Relação com os Alunos</span>
-              <span class="fw-bold">{{ professor.get_media_relacao }}/5</span>
-            </div>
-            <div class="progress">
-              <div class="progress-bar" role="progressbar" style="width: {{ professor.get_percent_relacao }}%;" aria-valuenow="{{ professor.get_media_relacao }}" aria-valuemin="0" aria-valuemax="5"></div>
-            </div>
-          </div>
-
-          <div class="mb-0">
-            <div class="d-flex justify-content-between criterio-label">
-              <span>Dificuldade</span>
-              <span class="fw-bold text-danger">{{ professor.get_media_dificuldade }}/5</span>
-            </div>
-            <div class="progress">
-              <div class="progress-bar bg-danger" role="progressbar" style="width: {{ professor.get_percent_dificuldade }}%;" aria-valuenow="{{ professor.get_media_dificuldade }}" aria-valuemin="0" aria-valuemax="5"></div>
-            </div>
-          </div>
-
-        </div>
-
-      </div>
-    </div>
-  </div>
+  {% include 'includes/professor_card.html' %}
+  {% include 'includes/professor_abas.html' %}
 
   <div class="mb-4 d-flex justify-content-between align-items-center">
     <div>

@@ -1,14 +1,19 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.urls import reverse
-from .models import Professor, Avaliacao, Comentario
-from .forms import NewAvaliacaoForm, ComentarioForm
+from .models import Professor, Avaliacao, Comentario, Disciplina, ProvaAntiga, ArquivoProva
+from .forms import NewAvaliacaoForm, ComentarioForm, ProvaAntigaForm
+from .provas import salvar_arquivos
+from .utils import normalizar
+from django.conf import settings
 from django.contrib.auth.models import User
 from django.contrib.auth.decorators import login_required
+from django.core.exceptions import PermissionDenied
 from django.db import transaction # Adicione este import
+from django.http import FileResponse, Http404, JsonResponse
 from django.utils import timezone
 from django.utils.decorators import method_decorator
 from django.views.generic import UpdateView
-from django.db.models import Count, Avg, Q
+from django.db.models import Count, Avg, Q, Case, When, Value, IntegerField
 from django.views.generic import ListView
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger 
 from django.db.models import F
@@ -82,6 +87,7 @@ class AvaliacaoListView(ListView):
 
         # 2. CÓDIGO ORIGINAL QUE VOCÊ JÁ TINHA
         kwargs['professor'] = self.professor
+        kwargs['aba'] = 'avaliacoes'
         
         # Se o utilizador estiver logado, verifica se já existe uma avaliação dele
         if self.request.user.is_authenticated:
@@ -303,11 +309,158 @@ def contato(request):
             messages.success(request, 'Sua mensagem foi enviada com sucesso. Obrigado pelo contato!')
             return redirect('home')
     else:
-        form = ContatoForm()
-        
+        inicial = {}
+        # Link "Pedir remoção" de uma prova antiga já preenche a mensagem
+        prova_pk = request.GET.get('remover_prova', '')
+        prova = ProvaAntiga.objects.filter(pk=prova_pk).first() if prova_pk.isdigit() else None
+        if prova:
+            url = request.build_absolute_uri(reverse('prova_detalhe', kwargs={'pk': prova.pk}))
+            inicial['mensagem'] = f'Peço a remoção da prova {prova} ({url}).\nMotivo: '
+        form = ContatoForm(initial=inicial)
+
     return render(request, 'contato.html', {'form': form})
 
 from django.views.generic import TemplateView
 
 class QueroAjudarView(TemplateView):
     template_name = 'quero_ajudar.html'
+
+
+# ---------------------------------------------------------------------------
+# Provas antigas
+# ---------------------------------------------------------------------------
+
+def provas_professor(request, pk):
+    professor = get_object_or_404(Professor, pk=pk)
+    provas = professor.provas.select_related('disciplina', 'enviado_por').prefetch_related('arquivos')
+
+    por_disciplina = {}
+    for prova in provas:
+        por_disciplina.setdefault(prova.disciplina, []).append(prova)
+    grupos = [
+        {'disciplina': disciplina, 'provas': sorted(lista, key=ProvaAntiga.chave_ordenacao)}
+        for disciplina, lista in sorted(por_disciplina.items(), key=lambda item: item[0].codigo)
+    ]
+
+    return render(request, 'provas_antigas.html', {
+        'professor': professor,
+        'aba': 'provas',
+        'grupos': grupos,
+    })
+
+
+def prova_detalhe(request, pk):
+    prova = get_object_or_404(
+        ProvaAntiga.objects.select_related('professor', 'disciplina', 'enviado_por').prefetch_related('arquivos'),
+        pk=pk,
+    )
+    return render(request, 'prova_detalhe.html', {
+        'prova': prova,
+        'professor': prova.professor,
+        'pode_excluir': prova.pode_excluir(request.user),
+    })
+
+
+@login_required
+def enviar_prova(request, pk):
+    professor = get_object_or_404(Professor, pk=pk)
+
+    if request.method == 'POST':
+        form = ProvaAntigaForm(request.POST, request.FILES, user=request.user)
+        if form.is_valid():
+            dados = form.cleaned_data
+            with transaction.atomic():
+                prova = ProvaAntiga.objects.create(
+                    professor=professor,
+                    disciplina=dados['disciplina'],
+                    semestre=dados['semestre'],
+                    tipo=dados['tipo'],
+                    observacao=dados['observacao'],
+                    enviado_por=request.user,
+                )
+                salvar_arquivos(prova, dados['arquivos'])
+            messages.success(request, 'Prova enviada. Obrigado por ajudar quem vai cursar essa disciplina!')
+            return redirect('prova_detalhe', pk=prova.pk)
+    else:
+        inicial = {}
+        # Botão "Enviar prova" de uma disciplina já vem com ela escolhida
+        disciplina = Disciplina.objects.filter(codigo=request.GET.get('disciplina', '').upper()).first()
+        if disciplina:
+            inicial['disciplina'] = f'{disciplina.codigo} - {disciplina.nome}'
+        form = ProvaAntigaForm(initial=inicial, user=request.user)
+
+    return render(request, 'enviar_prova.html', {
+        'professor': professor,
+        'form': form,
+        'sugestoes': disciplinas_do_professor(professor),
+        'tamanho_maximo': settings.PROVAS_TAMANHO_MAXIMO,
+        'max_arquivos': settings.PROVAS_MAX_ARQUIVOS,
+    })
+
+
+@login_required
+def excluir_prova(request, pk):
+    prova = get_object_or_404(ProvaAntiga.objects.select_related('professor', 'disciplina'), pk=pk)
+    if not prova.pode_excluir(request.user):
+        raise PermissionDenied
+    if request.method == 'POST':
+        professor_pk = prova.professor_id
+        prova.delete()  # os arquivos saem do disco pelo sinal post_delete de ArquivoProva
+        messages.success(request, 'Prova excluída.')
+        return redirect('professor_provas', pk=professor_pk)
+    return render(request, 'excluir_prova.html', {'prova': prova, 'professor': prova.professor})
+
+
+def _servir_arquivo(campo, tipo_conteudo, nome=None):
+    try:
+        arquivo = campo.open('rb')
+    except FileNotFoundError:
+        raise Http404
+    resposta = FileResponse(arquivo, content_type=tipo_conteudo, filename=nome)  # inline
+    resposta['Cache-Control'] = 'public, max-age=86400'
+    return resposta
+
+
+def arquivo_prova(request, pk):
+    arquivo = get_object_or_404(ArquivoProva.objects.select_related('prova__disciplina'), pk=pk)
+    return _servir_arquivo(arquivo.arquivo, arquivo.tipo_conteudo, arquivo.nome_para_download())
+
+
+def miniatura_prova(request, pk):
+    arquivo = get_object_or_404(ArquivoProva, pk=pk)
+    if not arquivo.miniatura:
+        raise Http404
+    return _servir_arquivo(arquivo.miniatura, 'image/jpeg')
+
+
+def disciplinas_do_professor(professor):
+    """Disciplinas que já têm provas deste professor: viram atalhos no envio e vêm
+    primeiro na busca, para a próxima prova cair na mesma disciplina."""
+    return Disciplina.objects.filter(provas__professor=professor).distinct().order_by('codigo')
+
+
+def buscar_disciplinas(request):
+    """Sugestões do campo Disciplina: todas as palavras digitadas no código ou nome."""
+    termos = normalizar(request.GET.get('q', '')).split()[:6]
+    if len(''.join(termos)) < 2:
+        return JsonResponse({'resultados': []})
+
+    disciplinas = Disciplina.objects.all()
+    for termo in termos:
+        disciplinas = disciplinas.filter(busca__contains=termo)
+
+    # Primeiro as do próprio professor, depois as do instituto dele
+    prioridade = []
+    professor_pk = request.GET.get('professor', '')
+    professor = Professor.objects.select_related('instituto').filter(pk=professor_pk).first() if professor_pk.isdigit() else None
+    if professor:
+        prioridade.append(When(pk__in=disciplinas_do_professor(professor).values('pk'), then=Value(0)))
+        if professor.instituto:
+            prioridade.append(When(unidade=professor.instituto.nome, then=Value(1)))
+    disciplinas = disciplinas.annotate(
+        prioridade=Case(*prioridade, default=Value(2), output_field=IntegerField())
+    ).order_by('prioridade', 'codigo')[:15]
+
+    return JsonResponse({'resultados': [
+        {'codigo': d.codigo, 'nome': d.nome, 'unidade': d.unidade} for d in disciplinas
+    ]})

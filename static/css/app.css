@@ -198,6 +198,23 @@ a:hover { text-decoration-color: var(--da-accent); }
   --bs-btn-hover-border-color: var(--da-success-bright);
 }
 
+.btn-danger {
+  --bs-btn-bg: var(--da-danger);
+  --bs-btn-border-color: var(--da-danger);
+  --bs-btn-hover-bg: var(--da-danger-bright);
+  --bs-btn-hover-border-color: var(--da-danger-bright);
+  --bs-btn-active-bg: var(--da-danger);
+}
+
+.btn-outline-danger {
+  --bs-btn-color: var(--da-danger);
+  --bs-btn-border-color: var(--da-danger);
+  --bs-btn-hover-color: #fff;
+  --bs-btn-hover-bg: var(--da-danger);
+  --bs-btn-hover-border-color: var(--da-danger);
+  --bs-btn-active-bg: var(--da-danger);
+}
+
 .btn-light {
   --bs-btn-bg: var(--da-surface-2);
   --bs-btn-border-color: var(--da-border);
@@ -344,3 +361,193 @@ hr { border-color: var(--da-border); opacity: 1; }
 .dropdown-item { color: var(--da-text); }
 .dropdown-item:hover, .dropdown-item:focus { background-color: var(--da-surface-2); color: var(--da-accent); }
 .dropdown-divider { border-color: var(--da-border); }
+
+/* -------------------------------------------------------------------------
+   Perfil do professor: cabeçalho compartilhado pelas abas
+   ------------------------------------------------------------------------- */
+.professor-card {
+  background: var(--da-surface);
+  border-radius: 8px;
+  border: 1px solid var(--da-border);
+}
+.profile-img {
+  width: 140px;
+  height: 140px;
+  object-fit: cover;
+  border-radius: 50%;
+  background-color: var(--da-bg-alt);
+  border: 3px solid var(--da-border-strong);
+}
+.professor-card .progress { height: 16px; border-radius: 4px; margin-bottom: 0; }
+.professor-card .progress-bar { font-weight: bold; font-size: 0.75rem; }
+.criterio-label { font-weight: 500; margin-bottom: 2px; font-size: 0.88rem; color: var(--da-text); }
+.biografia-box { font-size: 0.95rem; line-height: 1.6; max-height: 175px; overflow-y: auto; }
+
+/* Abas (Avaliações | Provas antigas): sublinhado na cor de destaque, sem caixas */
+.perfil-abas {
+  display: flex;
+  gap: 0.25rem;
+  border-bottom: 1px solid var(--da-border);
+  margin-bottom: 1.5rem;
+}
+.perfil-abas a {
+  padding: 0.65rem 1rem;
+  margin-bottom: -1px;
+  border-bottom: 2px solid transparent;
+  color: var(--da-text-muted);
+  font-weight: 600;
+  text-decoration: none;
+  white-space: nowrap;
+}
+.perfil-abas a:hover { color: var(--da-text); border-bottom-color: var(--da-border-strong); }
+.perfil-abas a[aria-current="page"] { color: var(--da-accent); border-bottom-color: var(--da-accent); }
+.perfil-abas a:focus-visible { outline: 2px solid var(--da-accent); outline-offset: -2px; }
+.perfil-abas .contagem { margin-left: 0.35rem; font-weight: 500; color: var(--da-text-muted); font-variant-numeric: tabular-nums; }
+
+/* -------------------------------------------------------------------------
+   Provas antigas: cada prova é uma folha A4 com a primeira página
+   ------------------------------------------------------------------------- */
+.disciplina-grupo { margin-bottom: 2.5rem; }
+.disciplina-cabecalho { margin-bottom: 1rem; max-width: 70ch; }
+.disciplina-titulo { font-size: 1.2rem; margin: 0; line-height: 1.35; }
+.disciplina-codigo { color: var(--da-accent); margin-right: 0.4rem; font-variant-numeric: lining-nums; }
+.disciplina-unidade { color: var(--da-text-muted); font-size: 0.85rem; margin: 0.15rem 0 0; }
+
+.folhas {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(128px, 1fr));
+  gap: 1.5rem 1.25rem;
+  max-width: 980px;
+}
+.folha { display: block; color: inherit; text-decoration: none; }
+.folha:hover { color: inherit; }
+.folha:focus-visible { outline: none; }
+.folha-papel {
+  position: relative;
+  aspect-ratio: 210 / 297;
+  overflow: hidden;
+  background: var(--da-surface);
+  border: 1px solid var(--da-border);
+  border-radius: 2px;
+  box-shadow: 0 8px 16px -12px rgba(38, 36, 32, 0.45);
+  transition: transform 0.15s ease, border-color 0.15s ease;
+}
+/* Mais de uma página: folhas empilhadas por trás */
+.folha-papel.varias-paginas {
+  overflow: visible;
+  box-shadow:
+    4px 4px 0 -1px var(--da-surface),
+    4px 4px 0 0 var(--da-border-strong),
+    0 8px 16px -12px rgba(38, 36, 32, 0.45);
+}
+.folha-papel img { display: block; width: 100%; height: 100%; object-fit: cover; object-position: top; }
+.folha:hover .folha-papel { transform: translateY(-3px); border-color: var(--da-border-strong); }
+.folha:focus-visible .folha-papel { outline: 2px solid var(--da-accent); outline-offset: 3px; }
+
+/* PDF sem miniatura: linhas de texto esboçadas */
+.folha-pdf { display: flex; flex-direction: column; gap: 7px; padding: 18% 14% 0; height: 100%; }
+.folha-pdf span { display: block; height: 4px; border-radius: 2px; background: var(--da-bg-alt); }
+.folha-pdf span:nth-child(1) { width: 55%; height: 6px; background: var(--da-border-strong); margin-bottom: 6px; }
+.folha-pdf span:nth-child(3) { width: 85%; }
+.folha-pdf span:nth-child(5) { width: 70%; }
+.folha-pdf strong {
+  margin-top: auto;
+  margin-bottom: 14%;
+  align-self: center;
+  font-family: var(--da-font-display);
+  font-size: 1.05rem;
+  color: var(--da-text-muted);
+}
+
+.folha-legenda { margin-top: 0.6rem; line-height: 1.3; }
+.folha-semestre { font-family: var(--da-font-display); font-weight: 600; font-size: 1.05rem; font-variant-numeric: lining-nums tabular-nums; }
+.folha-detalhe { display: block; color: var(--da-text-muted); font-size: 0.83rem; }
+
+/* Folha em branco pontilhada: convite para enviar */
+.folha-vazia .folha-papel {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.75rem;
+  background: transparent;
+  border: 1.5px dashed var(--da-border-strong);
+  box-shadow: none;
+  color: var(--da-text-muted);
+  font-size: 0.85rem;
+  font-weight: 600;
+  text-align: center;
+}
+.folha-vazia:hover .folha-papel { border-color: var(--da-accent); color: var(--da-accent); }
+
+@media (prefers-reduced-motion: reduce) {
+  .folha-papel { transition: none; }
+  .folha:hover .folha-papel { transform: none; }
+}
+
+/* Página da prova: as páginas em tamanho de leitura */
+.prova-cabecalho { max-width: 70ch; }
+.prova-paginas, .prova-rodape { max-width: 820px; }
+.confirmacao { max-width: 560px; }
+.prova-pagina { margin: 0 0 2rem; }
+.prova-pagina img {
+  display: block;
+  width: 100%;
+  height: auto;
+  background: var(--da-surface);
+  border: 1px solid var(--da-border);
+  box-shadow: 0 10px 24px -18px rgba(38, 36, 32, 0.5);
+}
+.prova-pagina figcaption { margin-top: 0.5rem; font-size: 0.85rem; color: var(--da-text-muted); }
+
+/* Envio: tipo da prova em opções lado a lado, área de arquivos */
+.opcoes-tipo { display: flex; flex-wrap: wrap; gap: 0.5rem; }
+.opcoes-tipo input { position: absolute; opacity: 0; pointer-events: none; }
+.opcoes-tipo label {
+  padding: 0.45rem 0.95rem;
+  border: 1px solid var(--da-border-strong);
+  border-radius: 5px;
+  background: var(--da-surface);
+  color: var(--da-text);
+  font-weight: 600;
+  cursor: pointer;
+}
+.opcoes-tipo label:hover { border-color: var(--da-accent); }
+.opcoes-tipo input:checked + label { background: var(--da-accent); border-color: var(--da-accent); color: var(--da-accent-contrast); }
+.opcoes-tipo input:focus-visible + label { outline: 2px solid var(--da-accent); outline-offset: 2px; }
+
+.sugestoes-disciplina { display: flex; flex-wrap: wrap; gap: 0.4rem; margin-top: 0.5rem; }
+.sugestoes-disciplina button {
+  padding: 0.2rem 0.6rem;
+  border: 1px solid var(--da-border);
+  border-radius: 999px;
+  background: var(--da-surface-2);
+  color: var(--da-text);
+  font-size: 0.82rem;
+}
+.sugestoes-disciplina button:hover { border-color: var(--da-accent); color: var(--da-accent); }
+
+.zona-envio {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.35rem;
+  min-height: 190px;
+  padding: 1.5rem;
+  border: 1.5px dashed var(--da-border-strong);
+  border-radius: 6px;
+  background: var(--da-surface);
+  text-align: center;
+  cursor: pointer;
+}
+.zona-envio:hover, .zona-envio.arrastando { border-color: var(--da-accent); background: rgba(31, 58, 95, 0.04); }
+.zona-envio:focus-within { outline: 2px solid var(--da-accent); outline-offset: 2px; }
+.zona-envio .zona-titulo { font-family: var(--da-font-display); font-size: 1.1rem; font-weight: 600; }
+.zona-envio .zona-ajuda { color: var(--da-text-muted); font-size: 0.85rem; font-weight: 400; }
+
+.lista-arquivos { list-style: none; padding: 0; margin: 0.75rem 0 0; font-size: 0.88rem; }
+.lista-arquivos li { display: flex; justify-content: space-between; gap: 1rem; padding: 0.35rem 0; border-bottom: 1px solid var(--da-border); }
+.lista-arquivos li span:first-child { overflow-wrap: anywhere; }
+.lista-arquivos li span:last-child { color: var(--da-text-muted); white-space: nowrap; font-variant-numeric: tabular-nums; }
+.total-arquivos { margin-top: 0.5rem; font-size: 0.85rem; color: var(--da-text-muted); font-variant-numeric: tabular-nums; }
+.total-arquivos.excedido { color: var(--da-danger); font-weight: 600; }

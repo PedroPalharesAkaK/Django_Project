@@ -60,5 +60,14 @@ urlpatterns = [
     path('perfil/editar/', accounts_views.editar_perfil, name='editar_perfil'),
     path('contato/', views.contato, name='contato'),
     path('quero-ajudar/', views.QueroAjudarView.as_view(), name='quero_ajudar'),
-    
+
+    # Provas antigas
+    path('professores/<int:pk>/provas/', views.provas_professor, name='professor_provas'),
+    path('professores/<int:pk>/provas/enviar/', views.enviar_prova, name='enviar_prova'),
+    path('provas/<int:pk>/', views.prova_detalhe, name='prova_detalhe'),
+    path('provas/<int:pk>/excluir/', views.excluir_prova, name='excluir_prova'),
+    path('provas/arquivos/<int:pk>/', views.arquivo_prova, name='arquivo_prova'),
+    path('provas/arquivos/<int:pk>/miniatura/', views.miniatura_prova, name='miniatura_prova'),
+    path('disciplinas/buscar/', views.buscar_disciplinas, name='buscar_disciplinas'),
+
 ]

@@ -1,6 +1,8 @@
 from django.db import models
 from django.contrib.auth.models import User
 from django.db.models import F
+from django.db.models.signals import post_delete
+from django.dispatch import receiver
 from django.utils.html import mark_safe
 from markdown import markdown
 import math
@@ -8,7 +10,9 @@ import nh3
 from django.db.models import Avg
 
 # IMPORTANTE: Importamos os validadores para garantir que a nota não passa de 5 nem desce de 0
-from django.core.validators import MinValueValidator, MaxValueValidator
+from django.core.validators import MinValueValidator, MaxValueValidator, RegexValidator
+
+from .utils import normalizar
 
 # Nome exibido no lugar do usuário em avaliações enviadas sem login
 AUTOR_ANONIMO = 'Anônimo'
@@ -49,6 +53,9 @@ class Professor(models.Model):
 
     def get_avaliacoes_count(self):
         return self.avaliacoes.count()
+
+    def get_provas_count(self):
+        return self.provas.count()
 
     def get_last_comentario(self):
         return Comentario.objects.filter(avaliacao__professor=self).order_by('-created_at').first()
@@ -155,6 +162,101 @@ class Comentario(models.Model):
         # passa pelo nh3, que só mantém tags e links seguros.
         return mark_safe(nh3.clean(markdown(self.texto)))
     
+
+class Disciplina(models.Model):
+    """Catálogo de disciplinas da USP (importado com `manage.py importar_disciplinas`)."""
+    codigo = models.CharField(max_length=12, unique=True)  # Ex: MAT0111, MAC-0115
+    nome = models.CharField(max_length=255)
+    unidade = models.CharField(max_length=150, blank=True)
+    departamento = models.CharField(max_length=150, blank=True)
+    # Código + nome sem acentos, para a busca achar "calculo" em "Cálculo"
+    busca = models.CharField(max_length=300, blank=True, editable=False, db_index=True)
+
+    class Meta:
+        ordering = ['codigo']
+
+    def save(self, *args, **kwargs):
+        self.busca = normalizar(f'{self.codigo} {self.nome}')
+        super().save(*args, **kwargs)
+
+    def __str__(self):
+        return f'{self.codigo} - {self.nome}'
+
+
+class ProvaAntiga(models.Model):
+    TIPOS = [
+        ('P1', 'P1'),
+        ('P2', 'P2'),
+        ('P3', 'P3'),
+        ('SUB', 'Substitutiva'),
+        ('REC', 'Recuperação'),
+        ('OUTRA', 'Outra'),
+    ]
+    ORDEM_TIPOS = {codigo: i for i, (codigo, _) in enumerate(TIPOS)}
+
+    professor = models.ForeignKey(Professor, on_delete=models.CASCADE, related_name='provas')
+    disciplina = models.ForeignKey(Disciplina, on_delete=models.PROTECT, related_name='provas')
+    semestre = models.CharField(max_length=6, validators=[RegexValidator(r'^\d{4}/[12]$', 'Use o formato 2024/1.')])
+    tipo = models.CharField(max_length=5, choices=TIPOS)
+    observacao = models.CharField(max_length=200, blank=True)
+    # Se a conta for apagada, a prova continua no site
+    enviado_por = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name='provas_enviadas')
+    criado_em = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['-semestre', 'tipo']
+        verbose_name = 'prova antiga'
+        verbose_name_plural = 'provas antigas'
+
+    def __str__(self):
+        return f'{self.disciplina.codigo} {self.semestre} {self.get_tipo_display()} - {self.professor}'
+
+    def chave_ordenacao(self):
+        """Mais recente primeiro; no mesmo semestre, P1, P2, P3, Sub, Rec, Outra."""
+        ano, periodo = self.semestre.split('/')
+        return (-int(ano), -int(periodo), self.ORDEM_TIPOS.get(self.tipo, 99))
+
+    def pode_excluir(self, user):
+        return user.is_authenticated and (user.is_staff or user.pk == self.enviado_por_id)
+
+    def get_resumo_arquivos(self):
+        """'3 páginas' quando são fotos, 'N arquivos' quando há PDF; vazio se for um arquivo só."""
+        arquivos = self.arquivos.all()
+        if len(arquivos) < 2:
+            return ''
+        if any(arquivo.is_pdf() for arquivo in arquivos):
+            return f'{len(arquivos)} arquivos'
+        return f'{len(arquivos)} páginas'
+
+
+class ArquivoProva(models.Model):
+    """Uma página (foto) ou um PDF de uma prova. As fotos já são salvas sem EXIF."""
+    prova = models.ForeignKey(ProvaAntiga, on_delete=models.CASCADE, related_name='arquivos')
+    arquivo = models.FileField(upload_to='provas/')
+    miniatura = models.FileField(upload_to='provas/miniaturas/', blank=True)
+    tipo_conteudo = models.CharField(max_length=40)  # application/pdf ou image/jpeg
+    tamanho = models.PositiveIntegerField()
+    ordem = models.PositiveSmallIntegerField(default=0)
+
+    class Meta:
+        ordering = ['ordem']
+
+    def is_pdf(self):
+        return self.tipo_conteudo == 'application/pdf'
+
+    def nome_para_download(self):
+        prova = self.prova
+        extensao = 'pdf' if self.is_pdf() else 'jpg'
+        return f'{prova.disciplina.codigo}-{prova.semestre.replace("/", "-")}-{prova.tipo}-{self.ordem + 1}.{extensao}'
+
+
+@receiver(post_delete, sender=ArquivoProva)
+def apagar_arquivos_do_disco(sender, instance, **kwargs):
+    # Roda também quando a prova (ou o professor) é apagada em cascata
+    for campo in (instance.arquivo, instance.miniatura):
+        if campo:
+            campo.delete(save=False)
+
 
 class Contato(models.Model):
     nome = models.CharField(max_length=100)

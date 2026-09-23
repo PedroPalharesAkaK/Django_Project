@@ -148,6 +148,16 @@ STATIC_ROOT = BASE_DIR / 'staticfiles'
 STATICFILES_DIRS = [
     str(BASE_DIR / 'static'),  # O str() é OBRIGATÓRIO aqui para o Windows, esta barra concatena os caminhos enre base dir e static
 ]
+
+# Arquivos enviados pelos usuários (provas antigas). Não são servidos pelo nginx:
+# passam pela view boards.views.arquivo_prova. No servidor ficam em ~/Django_Project/media.
+MEDIA_ROOT = BASE_DIR / 'media'
+
+# Provas antigas. O nginx do servidor aceita requisições de até 21M (/etc/nginx/conf.d/upload.conf),
+# um pouco acima deste limite, para o usuário ver a mensagem do Django e não o erro 413 do nginx.
+PROVAS_TAMANHO_MAXIMO = 20 * 1024 * 1024  # soma dos arquivos de um envio
+PROVAS_MAX_ARQUIVOS = 10
+PROVAS_LIMITE_DIARIO = 20  # envios por usuário a cada 24 horas
 #aprendendo a usar git no terminal vscode V 1.0.1
 
 LOGOUT_REDIRECT_URL = 'home'

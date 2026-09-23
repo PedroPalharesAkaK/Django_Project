@@ -1,0 +1,191 @@
+{% extends 'base.html' %}
+{% load widget_tweaks %}
+
+{% block title %}Enviar prova - {{ professor.nome }}{% endblock %}
+
+{% block breadcrumb %}
+  <li class="breadcrumb-item"><a href="{% url 'home' %}">Professores</a></li>
+  <li class="breadcrumb-item"><a href="{% url 'professor_avaliacoes' professor.pk %}">{{ professor.nome }}</a></li>
+  <li class="breadcrumb-item"><a href="{% url 'professor_provas' professor.pk %}">Provas antigas</a></li>
+  <li class="breadcrumb-item active">Enviar prova</li>
+{% endblock %}
+
+{% block content %}
+  <div class="card shadow-sm border-0 mb-5">
+    <div class="card-body p-4 p-md-5">
+      <h1 class="h4 mb-2">Enviar prova de {{ professor.nome }}</h1>
+      <p class="text-muted mb-4">Envie fotos ou o PDF do enunciado. Não inclua a sua folha de respostas.</p>
+
+      <form method="post" enctype="multipart/form-data" novalidate id="form-prova"
+            data-busca-url="{% url 'buscar_disciplinas' %}?professor={{ professor.pk }}"
+            data-tamanho-maximo="{{ tamanho_maximo }}" data-max-arquivos="{{ max_arquivos }}">
+        {% csrf_token %}
+
+        {% if form.non_field_errors %}
+          <div class="alert alert-danger">{{ form.non_field_errors|join:" " }}</div>
+        {% endif %}
+
+        <div class="row g-5">
+          <div class="col-md-6">
+
+            <div class="mb-4">
+              <label for="{{ form.disciplina.id_for_label }}" class="form-label">{{ form.disciplina.label }}</label>
+              {% if form.disciplina.errors %}
+                {% render_field form.disciplina class="form-control is-invalid" %}
+                <div class="invalid-feedback">{{ form.disciplina.errors|join:" " }}</div>
+              {% else %}
+                {% render_field form.disciplina class="form-control" %}
+              {% endif %}
+              <datalist id="disciplinas-sugeridas">
+                {% for disciplina in sugestoes %}
+                  <option value="{{ disciplina.codigo }} - {{ disciplina.nome }}">{{ disciplina.unidade }}</option>
+                {% endfor %}
+              </datalist>
+              {% if sugestoes %}
+                <div class="sugestoes-disciplina" aria-label="Disciplinas deste professor">
+                  {% for disciplina in sugestoes|slice:":8" %}
+                    <button type="button" data-disciplina="{{ disciplina.codigo }} - {{ disciplina.nome }}" title="{{ disciplina.nome }}">{{ disciplina.codigo }}</button>
+                  {% endfor %}
+                </div>
+              {% endif %}
+            </div>
+
+            <div class="mb-4">
+              <label for="{{ form.semestre.id_for_label }}" class="form-label">{{ form.semestre.label }}</label>
+              {% if form.semestre.errors %}
+                {% render_field form.semestre class="form-select is-invalid" %}
+                <div class="invalid-feedback">{{ form.semestre.errors|join:" " }}</div>
+              {% else %}
+                {% render_field form.semestre class="form-select" %}
+              {% endif %}
+            </div>
+
+            <fieldset class="mb-4">
+              <legend class="form-label fs-6">{{ form.tipo.label }}</legend>
+              <div class="opcoes-tipo">
+                {% for opcao in form.tipo %}
+                  {{ opcao.tag }}<label for="{{ opcao.id_for_label }}">{{ opcao.choice_label }}</label>
+                {% endfor %}
+              </div>
+              {% if form.tipo.errors %}<div class="text-danger small mt-2">{{ form.tipo.errors|join:" " }}</div>{% endif %}
+            </fieldset>
+
+            <div>
+              <label for="{{ form.observacao.id_for_label }}" class="form-label">{{ form.observacao.label }}</label>
+              {% render_field form.observacao class="form-control" %}
+              {% if form.observacao.errors %}<div class="text-danger small mt-1">{{ form.observacao.errors|join:" " }}</div>{% endif %}
+            </div>
+
+          </div>
+
+          <div class="col-md-6 d-flex flex-column">
+            <span class="form-label">{{ form.arquivos.label }}</span>
+            <label class="zona-envio" id="zona-envio">
+              {% render_field form.arquivos class="visually-hidden" %}
+              <span class="zona-titulo">Escolha as fotos ou o PDF</span>
+              <span class="zona-ajuda">Ou arraste os arquivos para cá. JPG, PNG ou PDF, até {{ max_arquivos }} arquivos e {{ tamanho_maximo|filesizeformat }} no total.</span>
+            </label>
+            {% if form.arquivos.errors %}
+              <div class="text-danger small mt-2">{{ form.arquivos.errors|join:" " }}</div>
+            {% endif %}
+            {% if form.errors %}
+              <p class="small text-muted mt-2 mb-0">O navegador não guarda os arquivos depois de um erro: selecione-os de novo.</p>
+            {% endif %}
+            <ul class="lista-arquivos" id="lista-arquivos"></ul>
+            <p class="total-arquivos" id="total-arquivos" aria-live="polite"></p>
+
+            <div class="text-end mt-auto pt-3">
+              <a href="{% url 'professor_provas' professor.pk %}" class="btn btn-light me-2 px-4">Cancelar</a>
+              <button type="submit" class="btn btn-primary px-4" id="botao-enviar">Enviar prova</button>
+            </div>
+          </div>
+        </div>
+      </form>
+
+    </div>
+  </div>
+{% endblock %}
+
+{% block javascript %}
+  <script>
+    (function () {
+      const form = document.getElementById('form-prova');
+      const input = form.querySelector('input[type="file"]');
+      const zona = document.getElementById('zona-envio');
+      const lista = document.getElementById('lista-arquivos');
+      const total = document.getElementById('total-arquivos');
+      const botao = document.getElementById('botao-enviar');
+      const tamanhoMaximo = Number(form.dataset.tamanhoMaximo);
+      const maxArquivos = Number(form.dataset.maxArquivos);
+      const emMB = (bytes) => (bytes / 1048576).toLocaleString('pt-BR', {maximumFractionDigits: 1}) + ' MB';
+
+      // Lista dos arquivos escolhidos e soma dos tamanhos, antes de enviar
+      function atualizarArquivos() {
+        const arquivos = Array.from(input.files);
+        lista.replaceChildren(...arquivos.map((arquivo) => {
+          const item = document.createElement('li');
+          const nome = document.createElement('span');
+          const tamanho = document.createElement('span');
+          nome.textContent = arquivo.name;
+          tamanho.textContent = emMB(arquivo.size);
+          item.append(nome, tamanho);
+          return item;
+        }));
+
+        const soma = arquivos.reduce((acumulado, arquivo) => acumulado + arquivo.size, 0);
+        let problema = '';
+        if (arquivos.length > maxArquivos) {
+          problema = 'São no máximo ' + maxArquivos + ' arquivos por prova.';
+        } else if (soma > tamanhoMaximo) {
+          problema = 'Passou do limite: tire algumas páginas ou use fotos menores.';
+        }
+        total.textContent = arquivos.length ? emMB(soma) + ' de ' + emMB(tamanhoMaximo) + (problema ? '. ' + problema : '') : '';
+        total.classList.toggle('excedido', Boolean(problema));
+        botao.disabled = Boolean(problema);
+      }
+
+      input.addEventListener('change', atualizarArquivos);
+      ['dragenter', 'dragover'].forEach((evento) => zona.addEventListener(evento, (e) => {
+        e.preventDefault();
+        zona.classList.add('arrastando');
+      }));
+      ['dragleave', 'drop'].forEach((evento) => zona.addEventListener(evento, (e) => {
+        e.preventDefault();
+        zona.classList.remove('arrastando');
+      }));
+      zona.addEventListener('drop', (e) => {
+        input.files = e.dataTransfer.files;
+        atualizarArquivos();
+      });
+
+      // Disciplina: sugestões do catálogo conforme a pessoa digita
+      const campo = document.getElementById('id_disciplina');
+      const sugeridas = document.getElementById('disciplinas-sugeridas');
+      let espera;
+      campo.addEventListener('input', () => {
+        clearTimeout(espera);
+        const termo = campo.value.trim();
+        const escolheuDaLista = Array.from(sugeridas.options).some((opcao) => opcao.value === termo);
+        if (termo.length < 2 || escolheuDaLista) return;
+        espera = setTimeout(async () => {
+          try {
+            const resposta = await fetch(form.dataset.buscaUrl + '&q=' + encodeURIComponent(termo));
+            const dados = await resposta.json();
+            sugeridas.replaceChildren(...dados.resultados.map((d) => new Option(d.unidade, d.codigo + ' - ' + d.nome)));
+          } catch (erro) {
+            // Sem sugestões o campo continua aceitando o código digitado
+          }
+        }, 200);
+      });
+      document.querySelectorAll('[data-disciplina]').forEach((atalho) => atalho.addEventListener('click', () => {
+        campo.value = atalho.dataset.disciplina;
+        campo.focus();
+      }));
+
+      form.addEventListener('submit', () => {
+        botao.disabled = true;
+        botao.textContent = 'Enviando…';
+      });
+    })();
+  </script>
+{% endblock %}

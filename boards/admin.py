@@ -25,3 +25,32 @@ class ContatoAdmin(admin.ModelAdmin):
     
     # Proteção: Impede que o admin edite a data em que a mensagem foi enviada
     readonly_fields = ('criado_em',)
+
+
+from .models import Disciplina, ArquivoProva, ProvaAntiga
+
+
+@admin.register(Disciplina)
+class DisciplinaAdmin(admin.ModelAdmin):
+    list_display = ('codigo', 'nome', 'unidade')
+    search_fields = ('codigo', 'nome')
+    list_filter = ('unidade',)
+
+
+class ArquivoProvaInline(admin.TabularInline):
+    model = ArquivoProva
+    extra = 0
+    fields = ('ordem', 'tipo_conteudo', 'tamanho', 'arquivo')
+    readonly_fields = ('tipo_conteudo', 'tamanho', 'arquivo')
+    can_delete = True
+
+
+@admin.register(ProvaAntiga)
+class ProvaAntigaAdmin(admin.ModelAdmin):
+    list_display = ('disciplina', 'semestre', 'tipo', 'professor', 'enviado_por', 'criado_em')
+    list_filter = ('tipo', 'semestre')
+    search_fields = ('disciplina__codigo', 'disciplina__nome', 'professor__nome', 'enviado_por__username')
+    # Os campos de busca evitam carregar milhares de opções nos selects
+    raw_id_fields = ('professor', 'disciplina', 'enviado_por')
+    readonly_fields = ('criado_em',)
+    inlines = [ArquivoProvaInline]

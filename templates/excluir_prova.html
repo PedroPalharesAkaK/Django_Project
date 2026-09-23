@@ -1,0 +1,26 @@
+{% extends 'base.html' %}
+
+{% block title %}Excluir prova{% endblock %}
+
+{% block breadcrumb %}
+  <li class="breadcrumb-item"><a href="{% url 'home' %}">Professores</a></li>
+  <li class="breadcrumb-item"><a href="{% url 'professor_provas' professor.pk %}">{{ professor.nome }}</a></li>
+  <li class="breadcrumb-item"><a href="{% url 'prova_detalhe' prova.pk %}">{{ prova.disciplina.codigo }} {{ prova.semestre }}</a></li>
+  <li class="breadcrumb-item active">Excluir</li>
+{% endblock %}
+
+{% block content %}
+  <div class="card confirmacao mx-auto mb-5">
+    <div class="card-body p-4">
+      <h1 class="h4 mb-3">Excluir esta prova?</h1>
+      <p class="mb-4">
+        A {{ prova.get_tipo_display }} de {{ prova.semestre }} de {{ prova.disciplina.codigo }} e todos os arquivos dela serão apagados do site. Isso não pode ser desfeito.
+      </p>
+      <form method="post" class="d-flex gap-2">
+        {% csrf_token %}
+        <button type="submit" class="btn btn-danger">Excluir prova</button>
+        <a href="{% url 'prova_detalhe' prova.pk %}" class="btn btn-light">Cancelar</a>
+      </form>
+    </div>
+  </div>
+{% endblock %}

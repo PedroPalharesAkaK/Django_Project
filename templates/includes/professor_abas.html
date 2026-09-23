@@ -1,0 +1,8 @@
+  <nav class="perfil-abas" aria-label="Seções do professor">
+    <a href="{% url 'professor_avaliacoes' professor.pk %}" {% if aba == 'avaliacoes' %}aria-current="page"{% endif %}>
+      Avaliações<span class="contagem">{{ professor.get_avaliacoes_count }}</span>
+    </a>
+    <a href="{% url 'professor_provas' professor.pk %}" {% if aba == 'provas' %}aria-current="page"{% endif %}>
+      Provas antigas<span class="contagem">{{ professor.get_provas_count }}</span>
+    </a>
+  </nav>

@@ -1,0 +1,59 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ prova.disciplina.codigo }} {{ prova.semestre }} {{ prova.get_tipo_display }} - {{ professor.nome }}{% endblock %}
+
+{% block breadcrumb %}
+  <li class="breadcrumb-item"><a href="{% url 'home' %}">Professores</a></li>
+  <li class="breadcrumb-item"><a href="{% url 'professor_avaliacoes' professor.pk %}">{{ professor.nome }}</a></li>
+  <li class="breadcrumb-item"><a href="{% url 'professor_provas' professor.pk %}">Provas antigas</a></li>
+  <li class="breadcrumb-item active">{{ prova.disciplina.codigo }} {{ prova.semestre }}</li>
+{% endblock %}
+
+{% block content %}
+  <article class="mb-5">
+    <header class="prova-cabecalho mb-4">
+      <h1 class="h3 mb-1">
+        <span class="disciplina-codigo">{{ prova.disciplina.codigo }}</span>{{ prova.disciplina.nome }}
+      </h1>
+      <p class="fs-5 mb-2">{{ prova.get_tipo_display }} de {{ prova.semestre }}, com {{ professor.nome }}</p>
+      {% if prova.observacao %}<p class="mb-2">{{ prova.observacao }}</p>{% endif %}
+      <p class="text-muted small mb-0">
+        Enviada por {{ prova.enviado_por.username|default:"uma conta removida" }} em {{ prova.criado_em|date:"d/m/Y" }}
+      </p>
+    </header>
+
+    <div class="prova-paginas">
+      {% with total=prova.arquivos.all|length %}
+        {% for arquivo in prova.arquivos.all %}
+          {% url 'arquivo_prova' arquivo.pk as arquivo_url %}
+          {% if arquivo.is_pdf %}
+            <div class="card mb-4">
+              <div class="card-body d-flex flex-wrap align-items-center justify-content-between gap-3">
+                <div>
+                  <strong class="d-block">PDF{% if total > 1 %} {{ forloop.counter }} de {{ total }}{% endif %}</strong>
+                  <span class="text-muted small">{{ arquivo.tamanho|filesizeformat }}</span>
+                </div>
+                <a href="{{ arquivo_url }}" class="btn btn-primary" target="_blank" rel="noopener">Abrir PDF</a>
+              </div>
+            </div>
+          {% else %}
+            <figure class="prova-pagina">
+              <a href="{{ arquivo_url }}" target="_blank" rel="noopener">
+                <img src="{{ arquivo_url }}" alt="Página {{ forloop.counter }} da prova" loading="{% if forloop.first %}eager{% else %}lazy{% endif %}">
+              </a>
+              <figcaption>Página {{ forloop.counter }} de {{ total }}. Clique para abrir em tamanho real.</figcaption>
+            </figure>
+          {% endif %}
+        {% endfor %}
+      {% endwith %}
+    </div>
+
+    <footer class="prova-rodape d-flex flex-wrap align-items-center gap-3 pt-3 border-top">
+      <a href="{% url 'professor_provas' professor.pk %}" class="btn btn-light">Voltar às provas</a>
+      {% if pode_excluir %}
+        <a href="{% url 'excluir_prova' prova.pk %}" class="btn btn-outline-danger">Excluir prova</a>
+      {% endif %}
+      <a href="{% url 'contato' %}?remover_prova={{ prova.pk }}" class="small text-muted ms-auto">Pedir remoção desta prova</a>
+    </footer>
+  </article>
+{% endblock %}
