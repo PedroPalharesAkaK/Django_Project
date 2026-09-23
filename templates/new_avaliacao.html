@@ -86,6 +86,13 @@
             Escolha uma nota entre 0 e 5 para avaliar <strong>{{ professor.nome }}</strong> nos seguintes quesitos. Em dificuldade, nota 5 significa maior dificuldade. Após avaliar, a sua pontuação fará parte da média geral do professor.
           </p>
           
+          {% if not user.is_authenticated %}
+            <div class="alert alert-warning small" role="alert">
+              Você não está logado: sua avaliação será publicada como <strong>Anônimo</strong> e marcada como de uma <strong>conta não verificada</strong>.
+              <a href="{% url 'login' %}?next={{ request.path|urlencode }}">Entre</a> ou <a href="{% url 'signup' %}">crie uma conta</a> para publicar com o seu usuário.
+            </div>
+          {% endif %}
+
           <form method="post" novalidate>
             {% csrf_token %}
 

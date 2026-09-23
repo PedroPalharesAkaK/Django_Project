@@ -4,10 +4,14 @@ from django.db.models import F
 from django.utils.html import mark_safe
 from markdown import markdown
 import math
+import nh3
 from django.db.models import Avg
 
 # IMPORTANTE: Importamos os validadores para garantir que a nota não passa de 5 nem desce de 0
 from django.core.validators import MinValueValidator, MaxValueValidator
+
+# Nome exibido no lugar do usuário em avaliações enviadas sem login
+AUTOR_ANONIMO = 'Anônimo'
 
 class Universidade(models.Model):
     nome = models.CharField(max_length=150, unique=True)
@@ -85,8 +89,9 @@ class Avaliacao(models.Model):
     last_updated = models.DateTimeField(auto_now_add=True)
     
     professor = models.ForeignKey(Professor, on_delete=models.CASCADE, related_name='avaliacoes')
-    starter = models.ForeignKey(User, on_delete=models.CASCADE, related_name='avaliacoes_criadas')
-    views = models.PositiveIntegerField(default=0) 
+    # Vazio (None) = avaliação anônima, enviada sem login (conta não verificada)
+    starter = models.ForeignKey(User, on_delete=models.CASCADE, related_name='avaliacoes_criadas', null=True, blank=True)
+    views = models.PositiveIntegerField(default=0)
 
     # NOVOS CAMPOS DE NOTAS (De 0 a 5)
     # Colocamos default=0 para que as avaliações antigas não quebrem a base de dados
@@ -102,6 +107,12 @@ class Avaliacao(models.Model):
 
     def __str__(self):
         return self.titulo
+
+    def is_anonima(self):
+        return self.starter_id is None
+
+    def get_autor_display(self):
+        return self.starter.username if self.starter_id else AUTOR_ANONIMO
 
     def get_page_count(self):
         count = self.comentarios.count()
@@ -128,11 +139,21 @@ class Comentario(models.Model):
     avaliacao = models.ForeignKey(Avaliacao, related_name='comentarios', on_delete=models.CASCADE)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(null=True)
-    created_by = models.ForeignKey(User, related_name='comentarios_feitos', on_delete=models.CASCADE)
+    # Vazio (None) = comentário inicial de uma avaliação anônima
+    created_by = models.ForeignKey(User, related_name='comentarios_feitos', on_delete=models.CASCADE, null=True, blank=True)
     updated_by = models.ForeignKey(User, null=True, related_name='+', on_delete=models.CASCADE)
 
+    def is_anonimo(self):
+        return self.created_by_id is None
+
+    def get_autor_display(self):
+        return self.created_by.username if self.created_by_id else AUTOR_ANONIMO
+
     def get_texto_as_markdown(self):
-        return mark_safe(markdown(self.texto))
+        # O markdown deixa passar HTML cru (<script>, onerror=...) e links javascript:.
+        # Como qualquer visitante pode escrever (avaliações anônimas), o HTML gerado
+        # passa pelo nh3, que só mantém tags e links seguros.
+        return mark_safe(nh3.clean(markdown(self.texto)))
     
 
 class Contato(models.Model):

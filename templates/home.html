@@ -81,7 +81,7 @@
                 {% if comentario %}
                   <small>
                     <a href="{% url 'avaliacao_comentarios' professor.pk comentario.avaliacao.pk %}" class="text-decoration-none">
-                      Por {{ comentario.created_by.username }}<br>
+                      Por {{ comentario.get_autor_display }}<br>
                       em {{ comentario.created_at|date:"d/m/Y H:i" }}
                     </a>
                   </small>

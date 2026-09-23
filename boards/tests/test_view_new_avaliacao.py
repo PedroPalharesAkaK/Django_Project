@@ -90,18 +90,5 @@ class NewAvaliacaoTests(TestCase):
         self.assertIsInstance(form, NewAvaliacaoForm)
 
 
-class LoginRequiredNewAvaliacaoTests(TestCase):
-    def setUp(self):
-        # 1. Criação do cenário de teste para utilizadores não logados
-        self.professor = Professor.objects.create(nome='Django', descricao='Django Professor.')
-        self.url = reverse('new_avaliacao', kwargs={'pk': self.professor.pk})
-        # 2. Fazemos uma requisição sem estar logados para testar a proteção
-        self.response = self.client.get(self.url)
-
-    def test_redirection(self):
-        """
-        Garante que usuários não autenticados sejam redirecionados para o login
-        """
-        login_url = reverse('login')
-        expected_url = f'{login_url}?next={self.url}'
-        self.assertRedirects(self.response, expected_url)
+# Visitantes sem login agora podem avaliar anonimamente: os testes desse fluxo
+# (que substituem o antigo LoginRequiredNewAvaliacaoTests) estão em test_avaliacao_anonima.py

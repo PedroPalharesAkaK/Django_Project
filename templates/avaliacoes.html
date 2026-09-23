@@ -195,7 +195,12 @@
                 {% endif %}
               </small>
             </td>
-            <td class="align-middle">{{ avaliacao.starter.username }}</td>
+            <td class="align-middle">
+              {{ avaliacao.get_autor_display }}
+              {% if avaliacao.is_anonima %}
+                <span class="badge bg-warning text-dark d-block mt-1">Conta não verificada</span>
+              {% endif %}
+            </td>
             <td class="align-middle">{{ avaliacao.replies }}</td>
             <td class="align-middle">{{ avaliacao.views }}</td>
             <td class="align-middle">{{ avaliacao.last_updated|naturaltime }}</td>

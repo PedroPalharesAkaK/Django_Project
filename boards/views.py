@@ -86,11 +86,14 @@ class AvaliacaoListView(ListView):
         # Se o utilizador estiver logado, verifica se já existe uma avaliação dele
         if self.request.user.is_authenticated:
             kwargs['usuario_ja_avaliou'] = Avaliacao.objects.filter(
-                professor=self.professor, 
+                professor=self.professor,
                 starter=self.request.user
             ).exists()
         else:
-            kwargs['usuario_ja_avaliou'] = False
+            # Visitante sem login: só sabemos se já avaliou anonimamente nesta sessão
+            kwargs['usuario_ja_avaliou'] = self.request.session.get(
+                anonimo_session_key(self.professor.pk), False
+            )
             
         return super().get_context_data(**kwargs)
 
@@ -127,31 +130,46 @@ class ComentarioListView(ListView):
         return queryset
 
 
-@login_required
+def anonimo_session_key(professor_pk):
+    return f'avaliou_anonimo_{professor_pk}'
+
+
+# Sem @login_required: visitantes sem conta também podem avaliar. A avaliação fica
+# sem autor (starter/created_by = None) e aparece marcada como de conta não verificada.
 @never_cache
 def new_avaliacao(request, pk):
     professor = get_object_or_404(Professor, pk=pk)
-    
-    # Verifica se já avaliou
-    ja_avaliou = Avaliacao.objects.filter(professor=professor, starter=request.user).exists()
+    anonimo = not request.user.is_authenticated
+
+    # Verifica se já avaliou (para anônimos, só dá para saber pela sessão)
+    if anonimo:
+        ja_avaliou = request.session.get(anonimo_session_key(professor.pk), False)
+    else:
+        ja_avaliou = Avaliacao.objects.filter(professor=professor, starter=request.user).exists()
     if ja_avaliou:
         return redirect('professor_avaliacoes', pk=professor.pk)
 
     if request.method == 'POST':
         form = NewAvaliacaoForm(request.POST)
         if form.is_valid():
+            autor = None if anonimo else request.user
+
             avaliacao = form.save(commit=False)
             avaliacao.professor = professor
-            avaliacao.starter = request.user
+            avaliacao.starter = autor
             avaliacao.save()
-            
+
             Comentario.objects.create(
-                texto=form.cleaned_data.get('texto'), 
+                texto=form.cleaned_data.get('texto'),
                 avaliacao=avaliacao,
-                created_by=request.user
+                created_by=autor
             )
-            
-            messages.success(request, 'Sua avaliação foi publicada com sucesso!')
+
+            if anonimo:
+                request.session[anonimo_session_key(professor.pk)] = True
+                messages.success(request, 'Sua avaliação anônima foi publicada! Ela aparece marcada como de uma conta não verificada.')
+            else:
+                messages.success(request, 'Sua avaliação foi publicada com sucesso!')
             return redirect('avaliacao_comentarios', pk=professor.pk, avaliacao_pk=avaliacao.pk)
     else:
         form = NewAvaliacaoForm()
