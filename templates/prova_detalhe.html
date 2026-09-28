@@ -18,7 +18,11 @@
       <p class="fs-5 mb-2">{{ prova.get_tipo_display }} de {{ prova.semestre }}, com {{ professor.nome }}</p>
       {% if prova.observacao %}<p class="mb-2">{{ prova.observacao }}</p>{% endif %}
       <p class="text-muted small mb-0">
-        Enviada por {{ prova.enviado_por.username|default:"uma conta removida" }} em {{ prova.criado_em|date:"d/m/Y" }}
+        {% if prova.enviado_por %}
+          Enviada por {{ prova.enviado_por.username }} em {{ prova.criado_em|date:"d/m/Y" }}
+        {% else %}
+          Adicionada ao site em {{ prova.criado_em|date:"d/m/Y" }}
+        {% endif %}
       </p>
     </header>
 

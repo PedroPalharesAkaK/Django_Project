@@ -6,3 +6,6 @@ db.sqlite3
 .env
 # Arquivos enviados pelos usuários (provas antigas)
 media/
+
+# Lotes de provas copiados para importar no servidor (importar_lote_provas)
+importacao/
