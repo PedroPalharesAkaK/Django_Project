@@ -1,0 +1,90 @@
+{% extends 'base.html' %}
+
+{% block title %}Provas antigas por disciplina{% endblock %}
+
+{% block breadcrumb %}
+  {% if termo %}
+    <li class="breadcrumb-item"><a href="{% url 'disciplinas' %}">Provas antigas</a></li>
+    <li class="breadcrumb-item active">Busca</li>
+  {% else %}
+    <li class="breadcrumb-item active">Provas antigas</li>
+  {% endif %}
+{% endblock %}
+
+{% block content %}
+  <header class="indice-cabecalho">
+    <h1 class="indice-titulo">Provas antigas</h1>
+    <p class="text-muted">
+      {% if total_provas %}{{ total_provas }} prova{{ total_provas|pluralize }} de {{ total_disciplinas }} disciplina{{ total_disciplinas|pluralize }}, enviadas por alunos.{% endif %}
+      Escolha a disciplina para ver as provas de todos os professores.
+    </p>
+    <form method="get" action="{% url 'disciplinas' %}" class="indice-busca" role="search">
+      <label for="busca-disciplina" class="visually-hidden">Buscar disciplina</label>
+      <input type="search" name="q" id="busca-disciplina" class="form-control" value="{{ termo }}"
+             placeholder="Código ou nome, ex.: MAT0111 ou Cálculo" autocomplete="off" spellcheck="false">
+      <button type="submit" class="btn btn-primary px-4">Buscar</button>
+    </form>
+  </header>
+
+  {% if termo and not buscou %}
+    <p class="text-muted">Digite pelo menos duas letras do código ou do nome.</p>
+  {% endif %}
+
+  {% if buscou and not com_provas and not sem_provas %}
+    <div class="text-center py-5">
+      <h2 class="h5 mb-2">Nenhuma disciplina encontrada para “{{ termo }}”</h2>
+      <p class="text-muted mb-0">Confira a grafia ou busque pelo código, como aparece no JupiterWeb.</p>
+    </div>
+  {% endif %}
+
+  {% if com_provas %}
+    {% regroup com_provas by unidade as unidades %}
+    {% for unidade in unidades %}
+      <section class="indice-unidade" aria-labelledby="unidade-{{ forloop.counter }}">
+        <h2 class="indice-unidade-titulo" id="unidade-{{ forloop.counter }}">{{ unidade.grouper|default:"Outras unidades" }}</h2>
+        <ul class="indice-lista">
+          {% for disciplina in unidade.list %}
+            <li>
+              <a href="{% url 'disciplina_provas' disciplina.codigo %}">
+                <span class="disciplina-codigo">{{ disciplina.codigo }}</span>
+                <span class="indice-nome">{{ disciplina.nome }}</span>
+                <span class="indice-guia" aria-hidden="true"></span>
+                <span class="indice-meta">
+                  {{ disciplina.total_provas }} prova{{ disciplina.total_provas|pluralize }}
+                  <span class="indice-meta-extra">· {{ disciplina.total_professores }} professor{{ disciplina.total_professores|pluralize:"es" }} · até {{ disciplina.ultimo_semestre }}</span>
+                </span>
+              </a>
+            </li>
+          {% endfor %}
+        </ul>
+      </section>
+    {% endfor %}
+  {% endif %}
+
+  {% if sem_provas %}
+    <h2 class="indice-secao">Ainda sem provas</h2>
+    <p class="text-muted small">Abra a disciplina para enviar a primeira.</p>
+    <ul class="indice-lista indice-lista-vazia">
+      {% for disciplina in sem_provas %}
+        <li>
+          <a href="{% url 'disciplina_provas' disciplina.codigo %}">
+            <span class="disciplina-codigo">{{ disciplina.codigo }}</span>
+            <span class="indice-nome">{{ disciplina.nome }}</span>
+            <span class="indice-guia" aria-hidden="true"></span>
+            <span class="indice-meta">{{ disciplina.unidade }}</span>
+          </a>
+        </li>
+      {% endfor %}
+    </ul>
+    {% if total_sem_provas > sem_provas|length %}
+      <p class="text-muted small mt-2">Mostrando {{ sem_provas|length }} de {{ total_sem_provas }}. Use mais palavras ou o código para achar a disciplina.</p>
+    {% endif %}
+  {% endif %}
+
+  {% if not termo and not com_provas %}
+    <div class="text-center py-5">
+      <h2 class="h5 mb-2">Ainda não há provas no site</h2>
+      <p class="text-muted mb-0">Busque a sua disciplina acima e envie a primeira.</p>
+    </div>
+  {% endif %}
+{% endblock %}

@@ -551,3 +551,74 @@ hr { border-color: var(--da-border); opacity: 1; }
 .lista-arquivos li span:last-child { color: var(--da-text-muted); white-space: nowrap; font-variant-numeric: tabular-nums; }
 .total-arquivos { margin-top: 0.5rem; font-size: 0.85rem; color: var(--da-text-muted); font-variant-numeric: tabular-nums; }
 .total-arquivos.excedido { color: var(--da-danger); font-weight: 600; }
+
+/* -------------------------------------------------------------------------
+   Provas por disciplina: índice em forma de sumário e página da disciplina
+   ------------------------------------------------------------------------- */
+/* Títulos de disciplina que levam à página dela */
+.disciplina-titulo a, .disciplina-titulo-link a { color: inherit; text-decoration: none; }
+.disciplina-titulo a:hover, .disciplina-titulo-link a:hover { text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: 0.2em; }
+.link-outros { font-weight: 500; }
+
+.indice-cabecalho { max-width: 760px; margin-bottom: 2.5rem; }
+.indice-titulo { font-size: 2rem; margin-bottom: 0.4rem; }
+.indice-busca { display: flex; gap: 0.5rem; max-width: 560px; }
+
+.indice-unidade { margin-bottom: 2.25rem; max-width: 860px; }
+.indice-unidade-titulo, .indice-secao {
+  margin: 0 0 0.25rem;
+  padding-bottom: 0.4rem;
+  border-bottom: 1px solid var(--da-border-strong);
+  font-family: var(--da-font-body);
+  font-size: 0.78rem;
+  font-weight: 600;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  color: var(--da-text-muted);
+}
+.indice-secao { margin-top: 2.5rem; max-width: 860px; }
+
+/* Cada disciplina é uma linha de sumário: código, nome, pontilhado, contagem */
+.indice-lista { list-style: none; padding: 0; margin: 0; max-width: 860px; }
+.indice-lista a {
+  display: flex;
+  align-items: baseline;
+  gap: 0.6rem;
+  padding: 0.55rem 0;
+  border-bottom: 1px solid var(--da-border);
+  color: var(--da-text);
+  text-decoration: none;
+}
+.indice-lista .disciplina-codigo { flex: none; min-width: 5.6em; margin: 0; font-weight: 600; font-variant-numeric: lining-nums tabular-nums; }
+.indice-nome { flex: 0 1 auto; }
+.indice-guia { flex: 1 1 1.5rem; min-width: 1.5rem; border-bottom: 1px dotted var(--da-border-strong); transform: translateY(-0.3em); }
+.indice-meta { flex: none; color: var(--da-text-muted); font-size: 0.85rem; font-variant-numeric: tabular-nums; }
+.indice-lista a:hover .indice-nome { color: var(--da-accent); text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: 0.2em; }
+.indice-lista a:hover .indice-guia { border-bottom-color: var(--da-accent); }
+.indice-lista a:focus-visible { outline: 2px solid var(--da-accent); outline-offset: 2px; }
+.indice-lista-vazia .disciplina-codigo { color: var(--da-text-muted); }
+
+/* Página da disciplina */
+.disciplina-pagina { max-width: 980px; margin-bottom: 2.5rem; padding-bottom: 1.5rem; border-bottom: 1px solid var(--da-border); }
+.disciplina-pagina-unidade { margin: 0 0 0.35rem; font-size: 0.8rem; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; color: var(--da-text-muted); }
+.disciplina-pagina-titulo { font-size: 1.9rem; line-height: 1.25; margin: 0 0 0.9rem; }
+.disciplina-pagina-resumo { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 1rem; color: var(--da-text-muted); }
+
+.professor-grupo { margin-bottom: 2.75rem; }
+.professor-grupo-cabecalho { display: flex; align-items: center; gap: 0.8rem; margin-bottom: 1.1rem; }
+.professor-avatar {
+  flex: none;
+  width: 44px;
+  height: 44px;
+  padding: 0;
+  border: 1px solid var(--da-border);
+  border-radius: 50%;
+  object-fit: cover;
+  background: var(--da-surface-2);
+  color: var(--da-border-strong);
+}
+svg.professor-avatar { padding: 6px; }
+.professor-grupo-nome { font-size: 1.15rem; margin: 0; line-height: 1.3; }
+.professor-grupo-nome a { color: var(--da-text); text-decoration: none; }
+.professor-grupo-nome a:hover { color: var(--da-accent); text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: 0.2em; }
+.professor-grupo-meta { margin: 0.1rem 0 0; font-size: 0.85rem; color: var(--da-text-muted); }

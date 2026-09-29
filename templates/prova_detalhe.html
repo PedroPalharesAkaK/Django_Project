@@ -12,8 +12,8 @@
 {% block content %}
   <article class="mb-5">
     <header class="prova-cabecalho mb-4">
-      <h1 class="h3 mb-1">
-        <span class="disciplina-codigo">{{ prova.disciplina.codigo }}</span>{{ prova.disciplina.nome }}
+      <h1 class="h3 mb-1 disciplina-titulo-link">
+        <a href="{% url 'disciplina_provas' prova.disciplina.codigo %}"><span class="disciplina-codigo">{{ prova.disciplina.codigo }}</span>{{ prova.disciplina.nome }}</a>
       </h1>
       <p class="fs-5 mb-2">{{ prova.get_tipo_display }} de {{ prova.semestre }}, com {{ professor.nome }}</p>
       {% if prova.observacao %}<p class="mb-2">{{ prova.observacao }}</p>{% endif %}
@@ -54,6 +54,7 @@
 
     <footer class="prova-rodape d-flex flex-wrap align-items-center gap-3 pt-3 border-top">
       <a href="{% url 'professor_provas' professor.pk %}" class="btn btn-light">Voltar às provas</a>
+      <a href="{% url 'disciplina_provas' prova.disciplina.codigo %}" class="btn btn-light">Todas as provas de {{ prova.disciplina.codigo }}</a>
       {% if pode_excluir %}
         <a href="{% url 'excluir_prova' prova.pk %}" class="btn btn-outline-danger">Excluir prova</a>
       {% endif %}

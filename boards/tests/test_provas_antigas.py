@@ -302,7 +302,7 @@ class EnviarProvaTests(ProvasTestCase):
         self.criar_prova(disciplina=self.algebra)
         response = self.client.get(self.enviar_url)
         self.assertEqual(list(response.context['sugestoes']), [self.algebra])
-        self.assertContains(response, 'data-disciplina="MAT0112 - Vetores e Geometria"')
+        self.assertContains(response, 'data-sugestao="MAT0112 - Vetores e Geometria"')
 
     def test_envio_valido_publica_na_hora(self):
         response = self.client.post(self.enviar_url, self.dados_envio(observacao='Turma do noturno'), follow=True)

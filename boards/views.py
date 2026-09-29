@@ -1,7 +1,7 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.urls import reverse
 from .models import Professor, Avaliacao, Comentario, Disciplina, ProvaAntiga, ArquivoProva
-from .forms import NewAvaliacaoForm, ComentarioForm, ProvaAntigaForm
+from .forms import NewAvaliacaoForm, ComentarioForm, ProvaAntigaForm, ProvaDaDisciplinaForm
 from .provas import salvar_arquivos
 from .utils import normalizar
 from django.conf import settings
@@ -10,10 +10,11 @@ from django.contrib.auth.decorators import login_required
 from django.core.exceptions import PermissionDenied
 from django.db import transaction # Adicione este import
 from django.http import FileResponse, Http404, JsonResponse
+from django.utils.http import urlencode
 from django.utils import timezone
 from django.utils.decorators import method_decorator
 from django.views.generic import UpdateView
-from django.db.models import Count, Avg, Q, Case, When, Value, IntegerField
+from django.db.models import Count, Avg, Max, Q, Case, When, Value, IntegerField
 from django.views.generic import ListView
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger 
 from django.db.models import F
@@ -337,8 +338,20 @@ def provas_professor(request, pk):
     por_disciplina = {}
     for prova in provas:
         por_disciplina.setdefault(prova.disciplina, []).append(prova)
+
+    # Quantas provas da mesma disciplina existem com outros professores
+    de_outros = dict(
+        ProvaAntiga.objects.filter(disciplina__in=list(por_disciplina)).exclude(professor=professor)
+        .values_list('disciplina').annotate(total=Count('pk'))
+    )
+    enviar_url = reverse('enviar_prova', kwargs={'pk': professor.pk})
     grupos = [
-        {'disciplina': disciplina, 'provas': sorted(lista, key=ProvaAntiga.chave_ordenacao)}
+        {
+            'disciplina': disciplina,
+            'provas': sorted(lista, key=ProvaAntiga.chave_ordenacao),
+            'de_outros': de_outros.get(disciplina.pk, 0),
+            'enviar_url': f"{enviar_url}?{urlencode({'disciplina': disciplina.codigo})}",
+        }
         for disciplina, lista in sorted(por_disciplina.items(), key=lambda item: item[0].codigo)
     ]
 
@@ -368,19 +381,7 @@ def enviar_prova(request, pk):
     if request.method == 'POST':
         form = ProvaAntigaForm(request.POST, request.FILES, user=request.user)
         if form.is_valid():
-            dados = form.cleaned_data
-            with transaction.atomic():
-                prova = ProvaAntiga.objects.create(
-                    professor=professor,
-                    disciplina=dados['disciplina'],
-                    semestre=dados['semestre'],
-                    tipo=dados['tipo'],
-                    observacao=dados['observacao'],
-                    enviado_por=request.user,
-                )
-                salvar_arquivos(prova, dados['arquivos'])
-            messages.success(request, 'Prova enviada. Obrigado por ajudar quem vai cursar essa disciplina!')
-            return redirect('prova_detalhe', pk=prova.pk)
+            return _publicar_prova(request, professor, form.cleaned_data['disciplina'], form.cleaned_data)
     else:
         inicial = {}
         # Botão "Enviar prova" de uma disciplina já vem com ela escolhida
@@ -393,6 +394,42 @@ def enviar_prova(request, pk):
         'professor': professor,
         'form': form,
         'sugestoes': disciplinas_do_professor(professor),
+        'tamanho_maximo': settings.PROVAS_TAMANHO_MAXIMO,
+        'max_arquivos': settings.PROVAS_MAX_ARQUIVOS,
+    })
+
+
+def _publicar_prova(request, professor, disciplina, dados):
+    with transaction.atomic():
+        prova = ProvaAntiga.objects.create(
+            professor=professor,
+            disciplina=disciplina,
+            semestre=dados['semestre'],
+            tipo=dados['tipo'],
+            observacao=dados['observacao'],
+            enviado_por=request.user,
+        )
+        salvar_arquivos(prova, dados['arquivos'])
+    messages.success(request, 'Prova enviada. Obrigado por ajudar quem vai cursar essa disciplina!')
+    return redirect('prova_detalhe', pk=prova.pk)
+
+
+@login_required
+def enviar_prova_disciplina(request, codigo):
+    """Envio a partir da página da disciplina: a pessoa escolhe o professor."""
+    disciplina = get_object_or_404(Disciplina, codigo=codigo.upper())
+
+    if request.method == 'POST':
+        form = ProvaDaDisciplinaForm(request.POST, request.FILES, user=request.user)
+        if form.is_valid():
+            return _publicar_prova(request, form.cleaned_data['professor'], disciplina, form.cleaned_data)
+    else:
+        form = ProvaDaDisciplinaForm(user=request.user)
+
+    return render(request, 'enviar_prova.html', {
+        'disciplina': disciplina,
+        'form': form,
+        'sugestoes': professores_da_disciplina(disciplina),
         'tamanho_maximo': settings.PROVAS_TAMANHO_MAXIMO,
         'max_arquivos': settings.PROVAS_MAX_ARQUIVOS,
     })
@@ -439,15 +476,26 @@ def disciplinas_do_professor(professor):
     return Disciplina.objects.filter(provas__professor=professor).distinct().order_by('codigo')
 
 
-def buscar_disciplinas(request):
-    """Sugestões do campo Disciplina: todas as palavras digitadas no código ou nome."""
-    termos = normalizar(request.GET.get('q', '')).split()[:6]
-    if len(''.join(termos)) < 2:
-        return JsonResponse({'resultados': []})
+def termos_de_busca(texto):
+    """Palavras sem acento; vazio quando o texto é curto demais para buscar."""
+    termos = normalizar(texto).split()[:6]
+    return termos if len(''.join(termos)) >= 2 else []
 
-    disciplinas = Disciplina.objects.all()
+
+def filtrar_disciplinas(disciplinas, termos):
+    """Todas as palavras precisam aparecer no código ou no nome."""
     for termo in termos:
         disciplinas = disciplinas.filter(busca__contains=termo)
+    return disciplinas
+
+
+def buscar_disciplinas(request):
+    """Sugestões do campo Disciplina: todas as palavras digitadas no código ou nome."""
+    termos = termos_de_busca(request.GET.get('q', ''))
+    if not termos:
+        return JsonResponse({'resultados': []})
+
+    disciplinas = filtrar_disciplinas(Disciplina.objects.all(), termos)
 
     # Primeiro as do próprio professor, depois as do instituto dele
     prioridade = []
@@ -464,3 +512,111 @@ def buscar_disciplinas(request):
     return JsonResponse({'resultados': [
         {'codigo': d.codigo, 'nome': d.nome, 'unidade': d.unidade} for d in disciplinas
     ]})
+
+
+def professores_da_disciplina(disciplina):
+    """Professores que já têm provas desta disciplina: atalhos no envio pela página dela."""
+    return Professor.objects.filter(provas__disciplina=disciplina).distinct().order_by('nome')
+
+
+def buscar_professores(request):
+    """Sugestões do campo Professor, sem diferenciar acentos.
+
+    Professor não guarda o nome normalizado, então a comparação é feita aqui:
+    são poucos milhares de nomes, lidos só com os campos necessários."""
+    termos = termos_de_busca(request.GET.get('q', ''))
+    if not termos:
+        return JsonResponse({'resultados': []})
+
+    encontrados = [
+        (pk, nome, instituto)
+        for pk, nome, instituto in Professor.objects.values_list('pk', 'nome', 'instituto__nome')
+        if all(termo in normalizar(nome) for termo in termos)
+    ]
+
+    # Primeiro quem já tem provas da disciplina, depois quem é da mesma unidade
+    disciplina = Disciplina.objects.filter(codigo=request.GET.get('disciplina', '').upper()).first()
+    com_provas = set(professores_da_disciplina(disciplina).values_list('pk', flat=True)) if disciplina else set()
+    unidade = disciplina.unidade if disciplina else None
+
+    def prioridade(item):
+        pk, nome, instituto = item
+        return (pk not in com_provas, not (unidade and instituto == unidade), normalizar(nome))
+
+    return JsonResponse({'resultados': [
+        {'nome': nome, 'instituto': instituto or ''} for _, nome, instituto in sorted(encontrados, key=prioridade)[:15]
+    ]})
+
+
+LIMITE_SEM_PROVAS = 20
+
+
+def disciplinas(request):
+    """Índice das provas antigas: disciplinas com provas, por unidade, e busca no catálogo."""
+    termo = request.GET.get('q', '').strip()[:100]
+    anotadas = Disciplina.objects.annotate(
+        total_provas=Count('provas', distinct=True),
+        total_professores=Count('provas__professor', distinct=True),
+        ultimo_semestre=Max('provas__semestre'),
+    )
+    contexto = {
+        'termo': termo,
+        'total_provas': ProvaAntiga.objects.count(),
+        'total_disciplinas': Disciplina.objects.filter(provas__isnull=False).distinct().count(),
+    }
+
+    if not termo:
+        contexto['com_provas'] = anotadas.filter(total_provas__gt=0).order_by('unidade', 'codigo')
+        return render(request, 'disciplinas.html', contexto)
+
+    # Código exato: vai direto para a disciplina
+    exata = Disciplina.objects.filter(codigo=termo.upper()).first()
+    if exata:
+        return redirect('disciplina_provas', codigo=exata.codigo)
+
+    termos = termos_de_busca(termo)
+    if termos:
+        encontradas = filtrar_disciplinas(anotadas, termos)
+        sem_provas = encontradas.filter(total_provas=0).order_by('codigo')
+        contexto.update({
+            'buscou': True,
+            'com_provas': encontradas.filter(total_provas__gt=0).order_by('unidade', 'codigo'),
+            'sem_provas': sem_provas[:LIMITE_SEM_PROVAS],
+            'total_sem_provas': sem_provas.count(),
+        })
+    return render(request, 'disciplinas.html', contexto)
+
+
+def provas_disciplina(request, codigo):
+    """Provas de uma disciplina com todos os professores, uma seção por professor."""
+    disciplina = get_object_or_404(Disciplina, codigo=codigo.upper())
+    if codigo != disciplina.codigo:
+        return redirect('disciplina_provas', codigo=disciplina.codigo, permanent=True)
+
+    provas = disciplina.provas.prefetch_related('arquivos')
+    por_professor = {}
+    for prova in provas:
+        por_professor.setdefault(prova.professor_id, []).append(prova)
+
+    # Nota e número de avaliações de cada professor numa consulta só
+    professores = Professor.objects.filter(pk__in=por_professor).annotate(
+        media=Avg('avaliacoes__nota_geral', filter=Q(avaliacoes__excluir_da_media=False)),
+        total_avaliacoes=Count('avaliacoes', distinct=True),
+    )
+    grupos = []
+    for professor in professores:
+        url = reverse('enviar_prova', kwargs={'pk': professor.pk})
+        grupos.append({
+            'professor': professor,
+            'provas': sorted(por_professor[professor.pk], key=ProvaAntiga.chave_ordenacao),
+            'enviar_url': f"{url}?{urlencode({'disciplina': disciplina.codigo})}",
+        })
+    # Quem tem a prova mais recente primeiro; empate em ordem alfabética
+    grupos.sort(key=lambda grupo: grupo['professor'].nome)
+    grupos.sort(key=lambda grupo: grupo['provas'][0].chave_ordenacao()[:2])
+
+    return render(request, 'provas_disciplina.html', {
+        'disciplina': disciplina,
+        'grupos': grupos,
+        'total_provas': sum(len(grupo['provas']) for grupo in grupos),
+    })

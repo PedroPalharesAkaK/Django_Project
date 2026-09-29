@@ -1,0 +1,24 @@
+{# Grade de provas em folhas A4. Recebe: provas, enviar_url e enviar_rotulo (a folha pontilhada no fim). #}
+<div class="folhas">
+  {% for prova in provas %}
+    {% with capa=prova.arquivos.all.0 total=prova.arquivos.all|length %}
+      <a class="folha" href="{% url 'prova_detalhe' prova.pk %}">
+        <div class="folha-papel{% if total > 1 %} varias-paginas{% endif %}">
+          {% if capa.miniatura %}
+            <img src="{% url 'miniatura_prova' capa.pk %}" alt="" loading="lazy">
+          {% else %}
+            <div class="folha-pdf" aria-hidden="true"><span></span><span></span><span></span><span></span><span></span><strong>PDF</strong></div>
+          {% endif %}
+        </div>
+        <div class="folha-legenda">
+          <span class="folha-semestre">{{ prova.semestre }}</span>
+          <span class="folha-detalhe">{{ prova.get_tipo_display }}{% with resumo=prova.get_resumo_arquivos %}{% if resumo %}, {{ resumo }}{% endif %}{% endwith %}</span>
+        </div>
+      </a>
+    {% endwith %}
+  {% endfor %}
+
+  <a class="folha folha-vazia" href="{{ enviar_url }}">
+    <div class="folha-papel">{{ enviar_rotulo }}</div>
+  </a>
+</div>

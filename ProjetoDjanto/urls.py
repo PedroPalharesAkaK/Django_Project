@@ -68,6 +68,11 @@ urlpatterns = [
     path('provas/<int:pk>/excluir/', views.excluir_prova, name='excluir_prova'),
     path('provas/arquivos/<int:pk>/', views.arquivo_prova, name='arquivo_prova'),
     path('provas/arquivos/<int:pk>/miniatura/', views.miniatura_prova, name='miniatura_prova'),
+    path('professores/buscar/', views.buscar_professores, name='buscar_professores'),
+    # "buscar" antes de <codigo>, senão seria lido como código de disciplina
+    path('disciplinas/', views.disciplinas, name='disciplinas'),
     path('disciplinas/buscar/', views.buscar_disciplinas, name='buscar_disciplinas'),
+    path('disciplinas/<str:codigo>/', views.provas_disciplina, name='disciplina_provas'),
+    path('disciplinas/<str:codigo>/enviar/', views.enviar_prova_disciplina, name='enviar_prova_disciplina'),
 
 ]

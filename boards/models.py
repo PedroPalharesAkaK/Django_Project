@@ -182,6 +182,12 @@ class Disciplina(models.Model):
     def __str__(self):
         return f'{self.codigo} - {self.nome}'
 
+    def get_jupiter_url(self):
+        """Ementa oficial no JupiterWeb. Só códigos no formato atual (7 caracteres, ex.: MAT0111)."""
+        if len(self.codigo) == 7 and self.codigo.isalnum():
+            return f'https://uspdigital.usp.br/jupiterweb/obterDisciplina?sgldis={self.codigo}'
+        return ''
+
 
 class ProvaAntiga(models.Model):
     TIPOS = [

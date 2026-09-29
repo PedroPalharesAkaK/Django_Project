@@ -1,23 +1,35 @@
 {% extends 'base.html' %}
 {% load widget_tweaks %}
 
-{% block title %}Enviar prova - {{ professor.nome }}{% endblock %}
+{# Dois modos: a partir do professor (escolhe a disciplina) ou da disciplina (escolhe o professor) #}
+{% block title %}Enviar prova - {% if professor %}{{ professor.nome }}{% else %}{{ disciplina.codigo }}{% endif %}{% endblock %}
 
 {% block breadcrumb %}
-  <li class="breadcrumb-item"><a href="{% url 'home' %}">Professores</a></li>
-  <li class="breadcrumb-item"><a href="{% url 'professor_avaliacoes' professor.pk %}">{{ professor.nome }}</a></li>
-  <li class="breadcrumb-item"><a href="{% url 'professor_provas' professor.pk %}">Provas antigas</a></li>
+  {% if professor %}
+    <li class="breadcrumb-item"><a href="{% url 'home' %}">Professores</a></li>
+    <li class="breadcrumb-item"><a href="{% url 'professor_avaliacoes' professor.pk %}">{{ professor.nome }}</a></li>
+    <li class="breadcrumb-item"><a href="{% url 'professor_provas' professor.pk %}">Provas antigas</a></li>
+  {% else %}
+    <li class="breadcrumb-item"><a href="{% url 'disciplinas' %}">Provas antigas</a></li>
+    <li class="breadcrumb-item"><a href="{% url 'disciplina_provas' disciplina.codigo %}">{{ disciplina.codigo }}</a></li>
+  {% endif %}
   <li class="breadcrumb-item active">Enviar prova</li>
 {% endblock %}
 
 {% block content %}
   <div class="card shadow-sm border-0 mb-5">
     <div class="card-body p-4 p-md-5">
-      <h1 class="h4 mb-2">Enviar prova de {{ professor.nome }}</h1>
+      {% if professor %}
+        <h1 class="h4 mb-2">Enviar prova de {{ professor.nome }}</h1>
+        {% url 'professor_provas' professor.pk as cancelar_url %}
+      {% else %}
+        <h1 class="h4 mb-2">Enviar prova de <span class="disciplina-codigo">{{ disciplina.codigo }}</span>{{ disciplina.nome }}</h1>
+        {% url 'disciplina_provas' disciplina.codigo as cancelar_url %}
+      {% endif %}
       <p class="text-muted mb-4">Envie fotos ou o PDF do enunciado. Não inclua a sua folha de respostas.</p>
 
       <form method="post" enctype="multipart/form-data" novalidate id="form-prova"
-            data-busca-url="{% url 'buscar_disciplinas' %}?professor={{ professor.pk }}"
+            data-busca-url="{% if professor %}{% url 'buscar_disciplinas' %}?professor={{ professor.pk }}{% else %}{% url 'buscar_professores' %}?disciplina={{ disciplina.codigo|urlencode }}{% endif %}"
             data-tamanho-maximo="{{ tamanho_maximo }}" data-max-arquivos="{{ max_arquivos }}">
         {% csrf_token %}
 
@@ -28,27 +40,51 @@
         <div class="row g-5">
           <div class="col-md-6">
 
-            <div class="mb-4">
-              <label for="{{ form.disciplina.id_for_label }}" class="form-label">{{ form.disciplina.label }}</label>
-              {% if form.disciplina.errors %}
-                {% render_field form.disciplina class="form-control is-invalid" %}
-                <div class="invalid-feedback">{{ form.disciplina.errors|join:" " }}</div>
-              {% else %}
-                {% render_field form.disciplina class="form-control" %}
-              {% endif %}
-              <datalist id="disciplinas-sugeridas">
-                {% for disciplina in sugestoes %}
-                  <option value="{{ disciplina.codigo }} - {{ disciplina.nome }}">{{ disciplina.unidade }}</option>
-                {% endfor %}
-              </datalist>
-              {% if sugestoes %}
-                <div class="sugestoes-disciplina" aria-label="Disciplinas deste professor">
-                  {% for disciplina in sugestoes|slice:":8" %}
-                    <button type="button" data-disciplina="{{ disciplina.codigo }} - {{ disciplina.nome }}" title="{{ disciplina.nome }}">{{ disciplina.codigo }}</button>
+            {% if professor %}
+              <div class="mb-4">
+                <label for="{{ form.disciplina.id_for_label }}" class="form-label">{{ form.disciplina.label }}</label>
+                {% if form.disciplina.errors %}
+                  {% render_field form.disciplina class="form-control is-invalid" %}
+                  <div class="invalid-feedback">{{ form.disciplina.errors|join:" " }}</div>
+                {% else %}
+                  {% render_field form.disciplina class="form-control" %}
+                {% endif %}
+                <datalist id="disciplinas-sugeridas">
+                  {% for sugestao in sugestoes %}
+                    <option value="{{ sugestao.codigo }} - {{ sugestao.nome }}">{{ sugestao.unidade }}</option>
                   {% endfor %}
-                </div>
-              {% endif %}
-            </div>
+                </datalist>
+                {% if sugestoes %}
+                  <div class="sugestoes-disciplina" aria-label="Disciplinas deste professor">
+                    {% for sugestao in sugestoes|slice:":8" %}
+                      <button type="button" data-sugestao="{{ sugestao.codigo }} - {{ sugestao.nome }}" title="{{ sugestao.nome }}">{{ sugestao.codigo }}</button>
+                    {% endfor %}
+                  </div>
+                {% endif %}
+              </div>
+            {% else %}
+              <div class="mb-4">
+                <label for="{{ form.professor.id_for_label }}" class="form-label">{{ form.professor.label }}</label>
+                {% if form.professor.errors %}
+                  {% render_field form.professor class="form-control is-invalid" %}
+                  <div class="invalid-feedback">{{ form.professor.errors|join:" " }}</div>
+                {% else %}
+                  {% render_field form.professor class="form-control" %}
+                {% endif %}
+                <datalist id="professores-sugeridos">
+                  {% for sugestao in sugestoes %}
+                    <option value="{{ sugestao.nome }}"></option>
+                  {% endfor %}
+                </datalist>
+                {% if sugestoes %}
+                  <div class="sugestoes-disciplina" aria-label="Professores que já têm provas desta disciplina">
+                    {% for sugestao in sugestoes|slice:":8" %}
+                      <button type="button" data-sugestao="{{ sugestao.nome }}">{{ sugestao.nome }}</button>
+                    {% endfor %}
+                  </div>
+                {% endif %}
+              </div>
+            {% endif %}
 
             <div class="mb-4">
               <label for="{{ form.semestre.id_for_label }}" class="form-label">{{ form.semestre.label }}</label>
@@ -95,7 +131,7 @@
             <p class="total-arquivos" id="total-arquivos" aria-live="polite"></p>
 
             <div class="text-end mt-auto pt-3">
-              <a href="{% url 'professor_provas' professor.pk %}" class="btn btn-light me-2 px-4">Cancelar</a>
+              <a href="{{ cancelar_url }}" class="btn btn-light me-2 px-4">Cancelar</a>
               <button type="submit" class="btn btn-primary px-4" id="botao-enviar">Enviar prova</button>
             </div>
           </div>
@@ -158,9 +194,12 @@
         atualizarArquivos();
       });
 
-      // Disciplina: sugestões do catálogo conforme a pessoa digita
-      const campo = document.getElementById('id_disciplina');
-      const sugeridas = document.getElementById('disciplinas-sugeridas');
+      // Disciplina ou professor: sugestões do servidor conforme a pessoa digita
+      const campo = form.querySelector('input[list]');
+      const sugeridas = document.getElementById(campo.getAttribute('list'));
+      const paraOpcao = campo.name === 'professor'
+        ? (p) => new Option(p.instituto, p.nome)
+        : (d) => new Option(d.unidade, d.codigo + ' - ' + d.nome);
       let espera;
       campo.addEventListener('input', () => {
         clearTimeout(espera);
@@ -171,14 +210,14 @@
           try {
             const resposta = await fetch(form.dataset.buscaUrl + '&q=' + encodeURIComponent(termo));
             const dados = await resposta.json();
-            sugeridas.replaceChildren(...dados.resultados.map((d) => new Option(d.unidade, d.codigo + ' - ' + d.nome)));
+            sugeridas.replaceChildren(...dados.resultados.map(paraOpcao));
           } catch (erro) {
-            // Sem sugestões o campo continua aceitando o código digitado
+            // Sem sugestões o campo continua aceitando o que foi digitado
           }
         }, 200);
       });
-      document.querySelectorAll('[data-disciplina]').forEach((atalho) => atalho.addEventListener('click', () => {
-        campo.value = atalho.dataset.disciplina;
+      document.querySelectorAll('[data-sugestao]').forEach((atalho) => atalho.addEventListener('click', () => {
+        campo.value = atalho.dataset.sugestao;
         campo.focus();
       }));
 

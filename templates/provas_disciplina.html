@@ -1,0 +1,68 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ disciplina.codigo }} {{ disciplina.nome }} - Provas antigas{% endblock %}
+
+{% block breadcrumb %}
+  <li class="breadcrumb-item"><a href="{% url 'disciplinas' %}">Provas antigas</a></li>
+  <li class="breadcrumb-item active">{{ disciplina.codigo }}</li>
+{% endblock %}
+
+{% block content %}
+  {% url 'enviar_prova_disciplina' disciplina.codigo as enviar_url %}
+
+  <header class="disciplina-pagina">
+    {% if disciplina.unidade %}
+      <p class="disciplina-pagina-unidade">{{ disciplina.unidade }}{% if disciplina.departamento %} · {{ disciplina.departamento }}{% endif %}</p>
+    {% endif %}
+    <h1 class="disciplina-pagina-titulo"><span class="disciplina-codigo">{{ disciplina.codigo }}</span>{{ disciplina.nome }}</h1>
+    <div class="disciplina-pagina-resumo">
+      {% if grupos %}
+        <p class="mb-0">
+          {{ total_provas }} prova{{ total_provas|pluralize }} de {{ grupos|length }} professor{{ grupos|length|pluralize:"es" }}, enviadas por alunos.
+          {% with jupiter=disciplina.get_jupiter_url %}{% if jupiter %}<a href="{{ jupiter }}" target="_blank" rel="noopener">Ementa no JupiterWeb</a>{% endif %}{% endwith %}
+        </p>
+        <a href="{{ enviar_url }}" class="btn btn-primary px-4">Enviar prova</a>
+      {% else %}
+        {% with jupiter=disciplina.get_jupiter_url %}{% if jupiter %}<p class="mb-0"><a href="{{ jupiter }}" target="_blank" rel="noopener">Ementa no JupiterWeb</a></p>{% endif %}{% endwith %}
+      {% endif %}
+    </div>
+  </header>
+
+  {% for grupo in grupos %}
+    {% with professor=grupo.professor %}
+      <section class="professor-grupo" aria-labelledby="professor-{{ professor.pk }}">
+        <header class="professor-grupo-cabecalho">
+          {% if professor.foto_url %}
+            <img src="{{ professor.foto_url }}" alt="" class="professor-avatar" loading="lazy">
+          {% else %}
+            <svg class="professor-avatar" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+              <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
+            </svg>
+          {% endif %}
+          <div>
+            <h2 class="professor-grupo-nome" id="professor-{{ professor.pk }}">
+              <a href="{% url 'professor_avaliacoes' professor.pk %}">{{ professor.nome }}</a>
+            </h2>
+            <p class="professor-grupo-meta">
+              {% if professor.total_avaliacoes %}
+                Nota geral {{ professor.media|floatformat:1 }}/5 em {{ professor.total_avaliacoes }} avaliaç{{ professor.total_avaliacoes|pluralize:"ão,ões" }}
+              {% else %}
+                Ainda sem avaliações
+              {% endif %}
+            </p>
+          </div>
+        </header>
+
+        {% include 'includes/folhas_provas.html' with provas=grupo.provas enviar_url=grupo.enviar_url enviar_rotulo="Enviar outra prova deste professor" %}
+      </section>
+    {% endwith %}
+  {% endfor %}
+
+  {% if not grupos %}
+    <div class="text-center py-5">
+      <h2 class="h5 mb-2">Ainda não há provas de {{ disciplina.codigo }}</h2>
+      <p class="text-muted mb-4">Se você guardou alguma prova desta disciplina, envie uma foto ou PDF do enunciado para ajudar a próxima turma.</p>
+      <a href="{{ enviar_url }}" class="btn btn-primary px-4">Enviar a primeira prova</a>
+    </div>
+  {% endif %}
+{% endblock %}

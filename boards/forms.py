@@ -59,8 +59,9 @@ from django.core.exceptions import ValidationError
 from django.template.defaultfilters import filesizeformat
 from django.utils import timezone
 
-from .models import Contato, Disciplina, ProvaAntiga
+from .models import Contato, Disciplina, Professor, ProvaAntiga
 from .provas import preparar_arquivo, semestres_ate_hoje
+from .utils import normalizar
 
 
 class MultipleFileInput(forms.ClearableFileInput):
@@ -143,6 +144,34 @@ class ProvaAntigaForm(forms.Form):
                     f'Você já enviou {enviadas} provas nas últimas 24 horas, o limite diário. Tente de novo amanhã.'
                 )
         return cleaned_data
+
+
+class ProvaDaDisciplinaForm(ProvaAntigaForm):
+    """Envio pela página da disciplina: ela já vem escolhida, falta dizer o professor."""
+    professor = forms.CharField(
+        label='Professor', max_length=100,
+        widget=forms.TextInput(attrs={
+            'list': 'professores-sugeridos', 'autocomplete': 'off', 'spellcheck': 'false',
+            'placeholder': 'Nome de quem deu a disciplina',
+        }),
+    )
+    field_order = ['professor', 'semestre', 'tipo', 'observacao', 'arquivos']
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        del self.fields['disciplina']
+
+    def clean_professor(self):
+        nome = ' '.join(self.cleaned_data['professor'].split())
+        professor = Professor.objects.filter(nome__iexact=nome).first()
+        if professor is None and nome:
+            # Nome digitado sem acento: compara as versões normalizadas
+            alvo = normalizar(nome)
+            pk = next((pk for pk, outro in Professor.objects.values_list('pk', 'nome') if normalizar(outro) == alvo), None)
+            professor = Professor.objects.filter(pk=pk).first()
+        if professor is None:
+            raise ValidationError('Escolha um professor da lista. Se ele ainda não está no site, peça a inclusão pelo Contato.')
+        return professor
 
 
 class ContatoForm(forms.ModelForm):

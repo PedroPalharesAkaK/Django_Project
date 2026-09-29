@@ -22,36 +22,23 @@
 
   {% for grupo in grupos %}
     <section class="disciplina-grupo" aria-labelledby="disciplina-{{ grupo.disciplina.pk }}">
+      {% url 'disciplina_provas' grupo.disciplina.codigo as disciplina_url %}
       <header class="disciplina-cabecalho">
         <h2 class="disciplina-titulo" id="disciplina-{{ grupo.disciplina.pk }}">
-          <span class="disciplina-codigo">{{ grupo.disciplina.codigo }}</span>{{ grupo.disciplina.nome }}
+          <a href="{{ disciplina_url }}"><span class="disciplina-codigo">{{ grupo.disciplina.codigo }}</span>{{ grupo.disciplina.nome }}</a>
         </h2>
-        {% if grupo.disciplina.unidade %}<p class="disciplina-unidade">{{ grupo.disciplina.unidade }}</p>{% endif %}
+        {% if grupo.disciplina.unidade or grupo.de_outros %}
+          <p class="disciplina-unidade">
+            {{ grupo.disciplina.unidade }}
+            {% if grupo.de_outros %}
+              {% if grupo.disciplina.unidade %}<span aria-hidden="true">·</span>{% endif %}
+              <a href="{{ disciplina_url }}" class="link-outros">+ {{ grupo.de_outros }} prova{{ grupo.de_outros|pluralize }} com outros professores</a>
+            {% endif %}
+          </p>
+        {% endif %}
       </header>
 
-      <div class="folhas">
-        {% for prova in grupo.provas %}
-          {% with capa=prova.arquivos.all.0 total=prova.arquivos.all|length %}
-            <a class="folha" href="{% url 'prova_detalhe' prova.pk %}">
-              <div class="folha-papel{% if total > 1 %} varias-paginas{% endif %}">
-                {% if capa.miniatura %}
-                  <img src="{% url 'miniatura_prova' capa.pk %}" alt="" loading="lazy">
-                {% else %}
-                  <div class="folha-pdf" aria-hidden="true"><span></span><span></span><span></span><span></span><span></span><strong>PDF</strong></div>
-                {% endif %}
-              </div>
-              <div class="folha-legenda">
-                <span class="folha-semestre">{{ prova.semestre }}</span>
-                <span class="folha-detalhe">{{ prova.get_tipo_display }}{% with resumo=prova.get_resumo_arquivos %}{% if resumo %}, {{ resumo }}{% endif %}{% endwith %}</span>
-              </div>
-            </a>
-          {% endwith %}
-        {% endfor %}
-
-        <a class="folha folha-vazia" href="{{ enviar_url }}?disciplina={{ grupo.disciplina.codigo|urlencode }}">
-          <div class="folha-papel">Enviar outra prova de {{ grupo.disciplina.codigo }}</div>
-        </a>
-      </div>
+      {% include 'includes/folhas_provas.html' with provas=grupo.provas enviar_url=grupo.enviar_url enviar_rotulo="Enviar outra prova de "|add:grupo.disciplina.codigo %}
     </section>
   {% endfor %}
 
