@@ -6,8 +6,10 @@
 #   media/   arquivos das provas: só envia os novos e nunca apaga nada lá
 #   config/  /etc/nginx, que fica fora do git (limite de upload etc.)
 #
-# A chave do rclone (SAS) só pode ler, criar e listar: um erro ou uma invasão
-# aqui no servidor não consegue apagar nem sobrescrever o que já foi enviado.
+# A chave do rclone (SAS) pode ler, criar, escrever e listar, mas não apagar; com o
+# versionamento ligado no Azure, sobrescrever um arquivo guarda a versão anterior.
+# Assim um erro ou uma invasão aqui no servidor não destrói o que já foi enviado.
+# (O rclone precisa de Write para enviar; o script mesmo nunca sobrescreve nada.)
 #
 # Roda pelo cron do servidor. Instalação e restauração: docs/backup.md
 set -euo pipefail
